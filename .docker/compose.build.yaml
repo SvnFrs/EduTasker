@@ -1,0 +1,22 @@
+services:
+  edutasker-api:
+    image: ${REGISTRY}/edutasker-api
+    build:
+      context: ../backend/edutasker-api
+      dockerfile: Dockerfile
+      tags:
+        - ${REGISTRY}/edutasker-api:${TAG}
+    profiles:
+      - backend
+      - build
+      - api
+  edutasker-client:
+    image: ${REGISTRY}/edutasker-client
+    build:
+      context: ../client/edutasker-client
+      dockerfile: Dockerfile
+      tags:
+        - ${REGISTRY}/edutasker-client:${TAG}
+    profiles:
+      - client
+      - build

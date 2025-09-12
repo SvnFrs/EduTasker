@@ -1,0 +1,18 @@
+on:
+  push:
+    branches:
+      - main
+      - feat/seller_dashboard
+  workflow_dispatch:
+
+jobs:
+  build-coffee-image:
+    name: Build / API
+    uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      actor: ${{ github.actor }}
+      repository: ${{ github.repository }}
+    secrets: inherit
