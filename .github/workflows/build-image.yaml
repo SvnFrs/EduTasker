@@ -32,7 +32,7 @@ jobs:
             echo "REGISTRY=ghcr.io/$REPO_LOWER" >> $GITHUB_ENV
       - name: Build and push image
         run: |
-            docker compose -f .docker/compose.build.yaml --profile build api --parallel
+            docker compose -f .docker/compose.build.yaml --profile api build --parallel
             docker compose -f .docker/compose.build.yaml --profile api push  
   build-client-image:
     name: Build Client Images
