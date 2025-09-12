@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { authRoute, userRoute } from "./module/index.ts";
+import { authRoute, userRoute } from "./module/index.js";
 const app = express();
 app.use(express.json());
 

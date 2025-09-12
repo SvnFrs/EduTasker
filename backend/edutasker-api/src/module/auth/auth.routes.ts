@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import * as AuthController from "./auth.controller.ts";
+import * as AuthController from "./auth.controller.js";
 const router = Router();
 /**
  * @openapi

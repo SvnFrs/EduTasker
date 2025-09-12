@@ -1,8 +1,8 @@
 
 
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.ts';
-import * as UserController from './user.controller.ts';
+import { authGuard } from '../../middleware/auth.middleware.js';
+import * as UserController from './user.controller.js';
 
 const router = Router();
 

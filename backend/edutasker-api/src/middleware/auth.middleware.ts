@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { verifyToken } from '../helper/jwt.ts';
+import { verifyToken } from '../helper/jwt.js';
 
 export const authGuard = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

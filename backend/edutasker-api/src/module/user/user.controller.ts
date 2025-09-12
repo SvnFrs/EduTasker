@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import * as UserService from './user.service.ts';
+import * as UserService from './user.service.js';
 
 export const getProfile = async (req: Request, res: Response) => {
   try {

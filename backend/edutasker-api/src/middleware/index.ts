@@ -1,2 +1,2 @@
-export * from './auth.middleware.ts';
-export * from './error-handler.middleware.ts'
+export * from './auth.middleware.js';
+export * from './error-handler.middleware.js'

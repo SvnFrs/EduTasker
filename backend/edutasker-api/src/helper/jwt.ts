@@ -1,5 +1,5 @@
 import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
-import { config } from "../config/env.ts";
+import { config } from "../config/env.js";
 
 export const signToken = (payload: object) => {
   const options: SignOptions = { expiresIn: config.JWT_EXPIRES_IN };

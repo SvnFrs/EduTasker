@@ -1,5 +1,5 @@
 import Joi from "joi";
-import ConfigLoader from "../helper/env-loader.ts";
+import ConfigLoader from "../helper/env-loader.js";
 
 interface EnvSchema {
   PORT: number;
