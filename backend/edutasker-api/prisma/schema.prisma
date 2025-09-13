@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Action {
+  READ
+  CREATE
+  UPDATE
+  DELETE
+}
+
 model Role {
   id          String           @id @default(uuid()) @map("id")
   name        String           @unique @map("name")
@@ -31,7 +38,7 @@ model UserRole {
 model Permission {
   id          String @id @default(uuid()) @map("id")
   name        String @unique @map("name")
-  action      String @map("action")
+  action      Action @map("action")
   pathRegex   String @map("path_regex")
   description String? @map("description")
 
