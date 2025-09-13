@@ -1,6 +1,8 @@
 
 import { Router } from "express";
+import { validate } from "../../middleware/validate.middleware.js";
 import * as AuthController from "./auth.controller.js";
+import { loginSchema, registerSchema } from "./auth.schema.js";
 const router = Router();
 /**
  * @openapi
@@ -25,7 +27,9 @@ const router = Router();
  *         description: Bad request
  */
 
-router.post("/register", AuthController.register);
+router.post("/register", [validate({
+    body: registerSchema
+})], AuthController.register);
 
 /**
  * @openapi
@@ -49,7 +53,9 @@ router.post("/register", AuthController.register);
  *       401:
  *         description: Unauthorized
  */
-router.post("/login", AuthController.login);
+router.post("/login", validate({
+    body: loginSchema
+}), AuthController.login);
 
 
 router.post("/refresh", AuthController.refreshToken);

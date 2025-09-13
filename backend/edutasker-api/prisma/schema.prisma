@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,24 +7,177 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Role {
+  id          String           @id @default(uuid()) @map("id")
+  name        String           @unique @map("name")
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model UserRole {
+  id     String @id @default(uuid()) @map("id")
+  userId String @map("user_id")
+  roleId String @map("role_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_role")
+}
+
+model Permission {
+  id          String @id @default(uuid()) @map("id")
+  name        String @unique @map("name")
+  action      String @map("action")
+  pathRegex   String @map("path_regex")
+  description String? @map("description")
+
+  roles RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  id           String @id @default(uuid()) @map("id")
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permission")
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String
-  tasks     Task[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid()) @map("id")
+  name         String   @map("name")
+  email        String   @unique @map("email")
+  passwordHash String   @map("password_hash")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  roles           UserRole[]
+  projectsCreated Project[]      @relation("ProjectCreatedBy")
+  projectMembers  ProjectMember[]
+  tasksCreated    Task[]         @relation("TaskCreatedBy")
+  taskAssignees   TaskAssignee[]
+  comments        Comment[]
+  files           File[]
+  notifications   Notification[]
+
+  @@map("user")
+}
+
+model Project {
+  id          String    @id @default(uuid()) @map("id")
+  name        String    @map("name")
+  description String?   @map("description")
+  status      String    @default("active") @map("status")
+  deadline    DateTime? @map("deadline")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  createdById String?   @map("created_by_id")
+  createdBy   User?     @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+
+  members ProjectMember[]
+  tasks   Task[]
+  files   File[]
+
+  @@map("project")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid()) @map("id")
+  role      String   @default("member") @map("role")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_member")
 }
 
 model Task {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  status      String   @default("pending")
-  deadline    DateTime?
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String   @id @default(uuid()) @map("id")
+  title       String   @map("title")
+  description String?  @map("description")
+  status      String   @default("todo") @map("status")
+  priority    String   @default("medium") @map("priority")
+  dueDate     DateTime? @map("due_date")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  projectId   String   @map("project_id")
+  createdById String?  @map("created_by_id")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User?    @relation("TaskCreatedBy", fields: [createdById], references: [id])
+
+  assignees TaskAssignee[]
+  comments  Comment[]
+
+  @@map("task")
+}
+
+model TaskAssignee {
+  id         String   @id @default(uuid()) @map("id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  taskId String @map("task_id")
+  userId String @map("user_id")
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+  @@map("task_assignee")
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @map("id")
+  content   String   @map("content")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  taskId String @map("task_id")
+  userId String @map("user_id")
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comment")
+}
+
+model File {
+  id          String   @id @default(uuid()) @map("id")
+  fileName    String   @map("file_name")
+  fileUrl     String   @map("file_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  projectId   String   @map("project_id")
+  uploadedById String? @map("uploaded_by_id")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy  User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@map("file")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @map("id")
+  message   String   @map("message")
+  type      String   @default("info") @map("type")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification")
 }

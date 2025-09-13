@@ -7,7 +7,9 @@ export interface LoginDTO {
 
 export interface RegisterDTO {
   email: string;
+  name: string;
   password: string;
+  rePassword: string;
 }
 
 export interface TokenPayload extends JwtPayload {
