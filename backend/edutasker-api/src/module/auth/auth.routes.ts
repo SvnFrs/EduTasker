@@ -6,8 +6,10 @@ import { loginSchema, registerSchema } from "./auth.schema.js";
 const router = Router();
 /**
  * @openapi
- * /register:
+ * /auth/register:
  *   post:
+ *     tags:
+ *       - Authentication
  *     summary: Register a new user
  *     requestBody:
  *       required: true
@@ -28,13 +30,15 @@ const router = Router();
  */
 
 router.post("/register", [validate({
-    body: registerSchema
+  body: registerSchema
 })], AuthController.register);
 
 /**
  * @openapi
- * /login:
+ * /auth/login:
  *   post:
+ *     tags:
+ *       - Authentication
  *     summary: Login a user
  *     requestBody:
  *       required: true
@@ -54,7 +58,7 @@ router.post("/register", [validate({
  *         description: Unauthorized
  */
 router.post("/login", validate({
-    body: loginSchema
+  body: loginSchema
 }), AuthController.login);
 
 

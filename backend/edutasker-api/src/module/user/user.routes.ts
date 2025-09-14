@@ -8,8 +8,10 @@ const router = Router();
 
 /**
  * @openapi
- * /me:
+ * /users/me:
  *   get:
+ *     tags:
+ *       - User Profile
  *     summary: Get current user profile
  *     security:
  *       - bearerAuth: []
@@ -40,8 +42,10 @@ router.get("/me", authGuard, UserController.getProfile);
 
 /**
  * @openapi
- * /me:
+ * /users/me:
  *   put:
+ *     tags:
+ *       - User Profile
  *     summary: Update current user profile
  *     security:
  *       - bearerAuth: []
@@ -88,8 +92,10 @@ router.put("/me", authGuard, validate({ body: updateProfileSchema }), UserContro
 
 /**
  * @openapi
- * /me/password:
+ * /users/me/password:
  *   put:
+ *     tags:
+ *       - User Profile
  *     summary: Change user password
  *     security:
  *       - bearerAuth: []
@@ -128,8 +134,10 @@ router.put("/me/password", authGuard, validate({ body: changePasswordSchema }), 
 
 /**
  * @openapi
- * /me/avatar:
+ * /users/me/avatar:
  *   put:
+ *     tags:
+ *       - User Profile
  *     summary: Update user avatar
  *     security:
  *       - bearerAuth: []
@@ -174,8 +182,10 @@ router.put("/me/avatar", authGuard, validate({ body: updateAvatarSchema }), User
 
 /**
  * @openapi
- * /:
+ * /users/:
  *   get:
+ *     tags:
+ *       - User Management
  *     summary: List all users
  *     security:
  *       - bearerAuth: []
@@ -227,8 +237,10 @@ router.get("/", authGuard, validate({ query: userListQuerySchema }), UserControl
 
 /**
  * @openapi
- * /{id}:
+ * /users/{id}:
  *   get:
+ *     tags:
+ *       - User Management
  *     summary: Get user by ID
  *     security:
  *       - bearerAuth: []
@@ -268,8 +280,10 @@ router.get("/:id", authGuard, validate({ params: userIdParamSchema }), UserContr
 
 /**
  * @openapi
- * /{id}:
+ * /users/{id}:
  *   put:
+ *     tags:
+ *       - User Management
  *     summary: Update user by ID
  *     security:
  *       - bearerAuth: []
@@ -326,8 +340,10 @@ router.put("/:id", authGuard, validate({ params: userIdParamSchema, body: update
 
 /**
  * @openapi
- * /{id}:
+ * /users/{id}:
  *   delete:
+ *     tags:
+ *       - User Management
  *     summary: Delete user by ID
  *     security:
  *       - bearerAuth: []

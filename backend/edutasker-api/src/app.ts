@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import express from "express";
-import { authRoute, userRoute } from "./module/index.js";
+import express, { Router } from "express";
+import { authRoute, commentRoute, projectRoute, roleRoute, taskRoute, userRoute } from "./module/index.js";
 const app = express();
 app.use(express.json());
 
@@ -8,7 +8,14 @@ app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Hello from Express + TypeScript + Bun!" });
 });
 
+const projectRouter = Router();
+projectRouter.use('/', projectRoute);
+projectRouter.use('/', taskRoute);
+projectRouter.use('/', commentRoute);
+
 app.use('/auth', authRoute);
 app.use('/users', userRoute);
+app.use('/projects', projectRouter);
+app.use('/roles', roleRoute);
 
 export default app;
