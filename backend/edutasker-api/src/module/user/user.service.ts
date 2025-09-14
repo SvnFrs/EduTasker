@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from '../../config/database.js';
-import type { UpdateProfileDTO, ChangePasswordDTO, UserProfileResponse, UpdateAvatarDTO } from './user.type.js';
+import type { UpdateProfileDTO, ChangePasswordDTO, UserProfileResponse, UpdateAvatarDTO, UserListQuery, UserListResponse, UpdateUserByIdDTO } from './user.type.js';
 
 const mapToUserProfileResponse = (user: {
   id: string;
@@ -115,4 +115,119 @@ export const updateUserAvatar = async (userId: string, data: UpdateAvatarDTO): P
   });
 
   return mapToUserProfileResponse(updatedUser);
+};
+
+export const getAllUsers = async (query: UserListQuery): Promise<UserListResponse> => {
+  const page = query.page || 1;
+  const limit = query.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const where = query.search ? {
+    OR: [
+      { name: { contains: query.search, mode: 'insensitive' as const } },
+      { email: { contains: query.search, mode: 'insensitive' as const } }
+    ]
+  } : {};
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' }
+    }),
+    prisma.user.count({ where })
+  ]);
+
+  return {
+    users: users.map(mapToUserProfileResponse),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit)
+  };
+};
+
+export const getUserById = async (userId: string): Promise<UserProfileResponse> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return mapToUserProfileResponse(user);
+};
+
+export const updateUserById = async (userId: string, data: UpdateUserByIdDTO): Promise<UserProfileResponse> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (data.email) {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+        NOT: { id: userId }
+      }
+    });
+
+    if (existingUser) {
+      throw new Error("Email already exists");
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.email && { email: data.email }),
+      ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return mapToUserProfileResponse(updatedUser);
+};
+
+export const deleteUserById = async (userId: string): Promise<void> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  await prisma.user.delete({
+    where: { id: userId }
+  });
 };

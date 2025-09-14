@@ -20,3 +20,23 @@ export interface ChangePasswordDTO {
 export interface UpdateAvatarDTO {
   avatarUrl: string;
 }
+
+export interface UserListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface UserListResponse {
+  users: UserProfileResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface UpdateUserByIdDTO {
+  name?: string;
+  email?: string;
+  avatarUrl?: string;
+}
