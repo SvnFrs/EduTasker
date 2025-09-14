@@ -1,13 +1,13 @@
 import { prisma } from '../../config/database.js';
 import type {
+  AssignPermissionsDTO,
   CreateRoleDTO,
-  UpdateRoleDTO,
-  RoleResponse,
+  PermissionResponse,
   RoleListQuery,
   RoleListResponse,
-  AssignPermissionsDTO,
-  PermissionResponse,
-  RolePermissionResponse
+  RolePermissionResponse,
+  RoleResponse,
+  UpdateRoleDTO
 } from './role.type.js';
 
 const mapToRoleResponse = (role: any): RoleResponse => ({
@@ -32,7 +32,6 @@ const mapToPermissionResponse = (permission: any): PermissionResponse => ({
 });
 
 export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => {
-  // Check if role name already exists
   const existingRole = await prisma.role.findUnique({
     where: { name: data.name }
   });
@@ -41,7 +40,6 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
     throw new Error("Role name already exists");
   }
 
-  // Verify permissions exist if provided
   if (data.permissionIds && data.permissionIds.length > 0) {
     const permissions = await prisma.permission.findMany({
       where: { id: { in: data.permissionIds } }
@@ -71,7 +69,6 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
     }
   });
 
-  // Assign permissions if provided
   if (data.permissionIds && data.permissionIds.length > 0) {
     await prisma.rolePermission.createMany({
       data: data.permissionIds.map(permissionId => ({
@@ -80,7 +77,6 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
       }))
     });
 
-    // Fetch role with permissions
     const roleWithPermissions = await prisma.role.findUnique({
       where: { id: role.id },
       include: {
@@ -185,7 +181,6 @@ export const updateRole = async (roleId: string, data: UpdateRoleDTO): Promise<R
     throw new Error("Role not found");
   }
 
-  // Check if new name already exists (if name is being updated)
   if (data.name && data.name !== role.name) {
     const existingRole = await prisma.role.findUnique({
       where: { name: data.name }
@@ -235,7 +230,6 @@ export const deleteRole = async (roleId: string): Promise<void> => {
     throw new Error("Role not found");
   }
 
-  // Prevent deletion if role has assigned users
   if (role._count.users > 0) {
     throw new Error("Cannot delete role that has assigned users");
   }
@@ -254,7 +248,6 @@ export const assignPermissionsToRole = async (roleId: string, data: AssignPermis
     throw new Error("Role not found");
   }
 
-  // Verify all permissions exist
   const permissions = await prisma.permission.findMany({
     where: { id: { in: data.permissionIds } }
   });
@@ -263,7 +256,6 @@ export const assignPermissionsToRole = async (roleId: string, data: AssignPermis
     throw new Error("One or more permissions not found");
   }
 
-  // Remove existing permissions and add new ones
   await prisma.rolePermission.deleteMany({
     where: { roleId }
   });
@@ -275,10 +267,8 @@ export const assignPermissionsToRole = async (roleId: string, data: AssignPermis
     }))
   });
 
-  // Fetch updated role with permissions
   const updatedRole = await getRoleById(roleId);
 
-  // Get all available permissions
   const allPermissions = await prisma.permission.findMany({
     orderBy: { name: 'asc' }
   });
