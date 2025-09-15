@@ -1,64 +1,53 @@
 import type { Request, Response } from "express";
 import * as CommentService from './comment.service.js';
 import type { CreateCommentDTO, CommentListQuery } from './comment.type.js';
+import { serviceWrapper } from "../../helper/service-wrapper.js";
 
-export const createComment = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const data: CreateCommentDTO = req.body;
-
-    const comment = await CommentService.createComment(projectId, taskId, data, userId);
-    res.status(201).json(comment);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const createCommentHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const data: CreateCommentDTO = req.body;
+  return await CommentService.createComment(projectId, taskId, data, userId);
 };
 
-export const listComments = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const query: CommentListQuery = req.query;
-
-    const result = await CommentService.getCommentsByTask(projectId, taskId, query, userId);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const listCommentsHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const query: CommentListQuery = req.query;
+  return await CommentService.getCommentsByTask(projectId, taskId, query, userId);
 };
 
-export const deleteComment = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId, commentId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-    if (!commentId) {
-      return res.status(400).json({ error: "Comment ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    await CommentService.deleteComment(projectId, taskId, commentId, userId);
-    res.json({ message: "Comment deleted successfully" });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const deleteCommentHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId, commentId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+  if (!commentId) {
+    throw new Error("Comment ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  await CommentService.deleteComment(projectId, taskId, commentId, userId);
+  return { message: "Comment deleted successfully" };
 };
+
+export const createComment = serviceWrapper(createCommentHandler, "Comment created successfully");
+export const listComments = serviceWrapper(listCommentsHandler, "Comments retrieved successfully");
+export const deleteComment = serviceWrapper(deleteCommentHandler, "Comment deleted successfully");

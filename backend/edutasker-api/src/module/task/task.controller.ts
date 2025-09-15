@@ -1,133 +1,103 @@
 import type { Request, Response } from "express";
 import * as TaskService from './task.service.js';
 import type { CreateTaskDTO, UpdateTaskDTO, TaskListQuery, AssignTaskDTO, UpdateTaskStatusDTO } from './task.type.js';
+import { serviceWrapper } from "../../helper/service-wrapper.js";
 
-export const createTask = async (req: Request, res: Response) => {
-  try {
-    const { projectId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const data: CreateTaskDTO = req.body;
-
-    const task = await TaskService.createTask(projectId, data, userId);
-    res.status(201).json(task);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const createTaskHandler = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+
+  const userId = (req as any).user.id;
+  const data: CreateTaskDTO = req.body;
+  return await TaskService.createTask(projectId, data, userId);
 };
 
-export const listTasks = async (req: Request, res: Response) => {
-  try {
-    const { projectId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const query: TaskListQuery = req.query;
-
-    const result = await TaskService.getTasksByProject(projectId, query, userId);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const listTasksHandler = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+
+  const userId = (req as any).user.id;
+  const query: TaskListQuery = req.query;
+  return await TaskService.getTasksByProject(projectId, query, userId);
 };
 
-export const getTaskById = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const task = await TaskService.getTaskById(projectId, taskId, userId);
-    res.json(task);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const getTaskByIdHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  return await TaskService.getTaskById(projectId, taskId, userId);
 };
 
-export const updateTask = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const data: UpdateTaskDTO = req.body;
-
-    const updatedTask = await TaskService.updateTask(projectId, taskId, data, userId);
-    res.json(updatedTask);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const updateTaskHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const data: UpdateTaskDTO = req.body;
+  return await TaskService.updateTask(projectId, taskId, data, userId);
 };
 
-export const deleteTask = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    await TaskService.deleteTask(projectId, taskId, userId);
-    res.json({ message: "Task deleted successfully" });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const deleteTaskHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  await TaskService.deleteTask(projectId, taskId, userId);
+  return { message: "Task deleted successfully" };
 };
 
-export const assignTask = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const data: AssignTaskDTO = req.body;
-
-    const updatedTask = await TaskService.assignUsersToTask(projectId, taskId, data, userId);
-    res.json(updatedTask);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const assignTaskHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const data: AssignTaskDTO = req.body;
+  return await TaskService.assignUsersToTask(projectId, taskId, data, userId);
 };
 
-export const updateTaskStatus = async (req: Request, res: Response) => {
-  try {
-    const { projectId, taskId } = req.params;
-    if (!projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!taskId) {
-      return res.status(400).json({ error: "Task ID is required" });
-    }
-
-    const userId = (req as any).user.id;
-    const data: UpdateTaskStatusDTO = req.body;
-
-    const updatedTask = await TaskService.updateTaskStatus(projectId, taskId, data, userId);
-    res.json(updatedTask);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const updateTaskStatusHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
   }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const data: UpdateTaskStatusDTO = req.body;
+  return await TaskService.updateTaskStatus(projectId, taskId, data, userId);
 };
+
+export const createTask = serviceWrapper(createTaskHandler, "Task created successfully");
+export const listTasks = serviceWrapper(listTasksHandler, "Tasks retrieved successfully");
+export const getTaskById = serviceWrapper(getTaskByIdHandler, "Task retrieved successfully");
+export const updateTask = serviceWrapper(updateTaskHandler, "Task updated successfully");
+export const deleteTask = serviceWrapper(deleteTaskHandler, "Task deleted successfully");
+export const assignTask = serviceWrapper(assignTaskHandler, "Task assigned successfully");
+export const updateTaskStatus = serviceWrapper(updateTaskStatusHandler, "Task status updated successfully");

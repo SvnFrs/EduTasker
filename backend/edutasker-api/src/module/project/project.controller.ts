@@ -1,100 +1,70 @@
 import type { Request, Response } from "express";
 import * as ProjectService from './project.service.js';
 import type { CreateProjectDTO, UpdateProjectDTO, ProjectListQuery, AddMemberDTO } from './project.type.js';
+import { serviceWrapper } from "../../helper/service-wrapper.js";
 
-export const createProject = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id;
-    const data: CreateProjectDTO = req.body;
-
-    const project = await ProjectService.createProject(data, userId);
-    res.status(201).json(project);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const createProjectHandler = async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const data: CreateProjectDTO = req.body;
+  return await ProjectService.createProject(data, userId);
 };
 
-export const listProjects = async (req: Request, res: Response) => {
-  try {
-    const query: ProjectListQuery = req.query;
-    const result = await ProjectService.getAllProjects(query);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const listProjectsHandler = async (req: Request, res: Response) => {
+  const query: ProjectListQuery = req.query;
+  return await ProjectService.getAllProjects(query);
 };
 
-export const getProjectById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    const project = await ProjectService.getProjectById(id);
-    res.json(project);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const getProjectByIdHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error("Project ID is required");
   }
+  return await ProjectService.getProjectById(id);
 };
 
-export const updateProject = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    const data: UpdateProjectDTO = req.body;
-    const updatedProject = await ProjectService.updateProject(id, data);
-    res.json(updatedProject);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const updateProjectHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error("Project ID is required");
   }
+  const data: UpdateProjectDTO = req.body;
+  return await ProjectService.updateProject(id, data);
 };
 
-export const deleteProject = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    await ProjectService.deleteProject(id);
-    res.json({ message: "Project deleted successfully" });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const deleteProjectHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error("Project ID is required");
   }
+  await ProjectService.deleteProject(id);
+  return { message: "Project deleted successfully" };
 };
 
-export const addMember = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-
-    const data: AddMemberDTO = req.body;
-    const updatedProject = await ProjectService.addProjectMember(id, data);
-    res.json(updatedProject);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const addMemberHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error("Project ID is required");
   }
+  const data: AddMemberDTO = req.body;
+  return await ProjectService.addProjectMember(id, data);
 };
 
-export const removeMember = async (req: Request, res: Response) => {
-  try {
-    const { id, userId } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required" });
-    }
-
-    await ProjectService.removeProjectMember(id, userId);
-    res.json({ message: "Member removed successfully" });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+const removeMemberHandler = async (req: Request, res: Response) => {
+  const { id, userId } = req.params;
+  if (!id) {
+    throw new Error("Project ID is required");
   }
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+  await ProjectService.removeProjectMember(id, userId);
+  return { message: "Member removed successfully" };
 };
+
+export const createProject = serviceWrapper(createProjectHandler, "Project created successfully");
+export const listProjects = serviceWrapper(listProjectsHandler, "Projects retrieved successfully");
+export const getProjectById = serviceWrapper(getProjectByIdHandler, "Project retrieved successfully");
+export const updateProject = serviceWrapper(updateProjectHandler, "Project updated successfully");
+export const deleteProject = serviceWrapper(deleteProjectHandler, "Project deleted successfully");
+export const addMember = serviceWrapper(addMemberHandler, "Member added successfully");
+export const removeMember = serviceWrapper(removeMemberHandler, "Member removed successfully");
