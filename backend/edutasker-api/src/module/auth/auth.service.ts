@@ -15,11 +15,11 @@ export const register = async (dto: RegisterDTO) => {
         create: {
           role: {
             connect: {
-              name_code: { name: 'Student', code: 'STUDENT' }
-            }
-          }
-        }
-      }
+              name_code: { name: "Student", code: "STUDENT" },
+            },
+          },
+        },
+      },
     },
   });
   return { user, token: signToken({ id: user.id, email: user.email }) };
