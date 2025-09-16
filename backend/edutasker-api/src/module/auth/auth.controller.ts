@@ -1,38 +1,24 @@
 import type { Request, Response } from "express";
 import * as AuthService from "./auth.service.js";
+import { serviceWrapper } from "../../helper/service-wrapper.js";
 
-export const register = async (req: Request, res: Response) => {
-  try {
-    const result = await AuthService.register(req.body);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const registerHandler = async (req: Request, res: Response) => {
+  return await AuthService.register(req.body);
 };
 
-export const login = async (req: Request, res: Response) => {
-  try {
-    const result = await AuthService.login(req.body);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const loginHandler = async (req: Request, res: Response) => {
+  return await AuthService.login(req.body);
 };
 
-export const logout = async (req: Request, res: Response) => {
-  try {
-    const result = await AuthService.logout(req.body);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const logoutHandler = async (req: Request, res: Response) => {
+  return await AuthService.logout(req.body);
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
-  try {
-    const result = await AuthService.refreshToken(req.body);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
+const refreshTokenHandler = async (req: Request, res: Response) => {
+  return await AuthService.refreshToken(req.body);
 };
+
+export const register = serviceWrapper(registerHandler, "User registered successfully");
+export const login = serviceWrapper(loginHandler, "User logged in successfully");
+export const logout = serviceWrapper(logoutHandler, "User logged out successfully");
+export const refreshToken = serviceWrapper(refreshTokenHandler, "Token refreshed successfully");

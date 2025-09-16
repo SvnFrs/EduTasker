@@ -1,4 +1,4 @@
-import { prisma } from '../../config/database.js';
+import { prisma } from "../../config/database.js";
 import type {
   AssignPermissionsDTO,
   CreateRoleDTO,
@@ -7,8 +7,8 @@ import type {
   RoleListResponse,
   RolePermissionResponse,
   RoleResponse,
-  UpdateRoleDTO
-} from './role.type.js';
+  UpdateRoleDTO,
+} from "./role.type.js";
 
 const mapToRoleResponse = (role: any): RoleResponse => ({
   id: role.id,
@@ -33,7 +33,7 @@ const mapToPermissionResponse = (permission: any): PermissionResponse => ({
 
 export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => {
   const existingRole = await prisma.role.findUnique({
-    where: { name: data.name }
+    where: { name: data.name },
   });
 
   if (existingRole) {
@@ -42,7 +42,7 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
 
   if (data.permissionIds && data.permissionIds.length > 0) {
     const permissions = await prisma.permission.findMany({
-      where: { id: { in: data.permissionIds } }
+      where: { id: { in: data.permissionIds } },
     });
 
     if (permissions.length !== data.permissionIds.length) {
@@ -58,23 +58,23 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
       permissions: {
         include: {
           permission: true,
-        }
+        },
       },
       _count: {
         select: {
           users: true,
           permissions: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (data.permissionIds && data.permissionIds.length > 0) {
     await prisma.rolePermission.createMany({
-      data: data.permissionIds.map(permissionId => ({
+      data: data.permissionIds.map((permissionId) => ({
         roleId: role.id,
-        permissionId
-      }))
+        permissionId,
+      })),
     });
 
     const roleWithPermissions = await prisma.role.findUnique({
@@ -83,15 +83,15 @@ export const createRole = async (data: CreateRoleDTO): Promise<RoleResponse> => 
         permissions: {
           include: {
             permission: true,
-          }
+          },
         },
         _count: {
           select: {
             users: true,
             permissions: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     return mapToRoleResponse(roleWithPermissions);
@@ -111,7 +111,7 @@ export const getAllRoles = async (query: RoleListQuery): Promise<RoleListRespons
   if (query.search) {
     where.name = {
       contains: query.search,
-      mode: 'insensitive'
+      mode: "insensitive",
     };
   }
 
@@ -119,23 +119,25 @@ export const getAllRoles = async (query: RoleListQuery): Promise<RoleListRespons
     prisma.role.findMany({
       where,
       include: {
-        permissions: includePermissions ? {
-          include: {
-            permission: true,
-          }
-        } : false,
+        permissions: includePermissions
+          ? {
+              include: {
+                permission: true,
+              },
+            }
+          : false,
         _count: {
           select: {
             users: true,
             permissions: true,
-          }
-        }
+          },
+        },
       },
       skip,
       take: limit,
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     }),
-    prisma.role.count({ where })
+    prisma.role.count({ where }),
   ]);
 
   return {
@@ -143,7 +145,7 @@ export const getAllRoles = async (query: RoleListQuery): Promise<RoleListRespons
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   };
 };
 
@@ -154,14 +156,14 @@ export const getRoleById = async (roleId: string): Promise<RoleResponse> => {
       permissions: {
         include: {
           permission: true,
-        }
+        },
       },
       _count: {
         select: {
           users: true,
           permissions: true,
-        }
-      }
+        },
+      },
     },
   });
 
@@ -174,7 +176,7 @@ export const getRoleById = async (roleId: string): Promise<RoleResponse> => {
 
 export const updateRole = async (roleId: string, data: UpdateRoleDTO): Promise<RoleResponse> => {
   const role = await prisma.role.findUnique({
-    where: { id: roleId }
+    where: { id: roleId },
   });
 
   if (!role) {
@@ -183,7 +185,7 @@ export const updateRole = async (roleId: string, data: UpdateRoleDTO): Promise<R
 
   if (data.name && data.name !== role.name) {
     const existingRole = await prisma.role.findUnique({
-      where: { name: data.name }
+      where: { name: data.name },
     });
 
     if (existingRole) {
@@ -200,14 +202,14 @@ export const updateRole = async (roleId: string, data: UpdateRoleDTO): Promise<R
       permissions: {
         include: {
           permission: true,
-        }
+        },
       },
       _count: {
         select: {
           users: true,
           permissions: true,
-        }
-      }
+        },
+      },
     },
   });
 
@@ -221,9 +223,9 @@ export const deleteRole = async (roleId: string): Promise<void> => {
       _count: {
         select: {
           users: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!role) {
@@ -235,13 +237,16 @@ export const deleteRole = async (roleId: string): Promise<void> => {
   }
 
   await prisma.role.delete({
-    where: { id: roleId }
+    where: { id: roleId },
   });
 };
 
-export const assignPermissionsToRole = async (roleId: string, data: AssignPermissionsDTO): Promise<RolePermissionResponse> => {
+export const assignPermissionsToRole = async (
+  roleId: string,
+  data: AssignPermissionsDTO,
+): Promise<RolePermissionResponse> => {
   const role = await prisma.role.findUnique({
-    where: { id: roleId }
+    where: { id: roleId },
   });
 
   if (!role) {
@@ -249,7 +254,7 @@ export const assignPermissionsToRole = async (roleId: string, data: AssignPermis
   }
 
   const permissions = await prisma.permission.findMany({
-    where: { id: { in: data.permissionIds } }
+    where: { id: { in: data.permissionIds } },
   });
 
   if (permissions.length !== data.permissionIds.length) {
@@ -257,32 +262,32 @@ export const assignPermissionsToRole = async (roleId: string, data: AssignPermis
   }
 
   await prisma.rolePermission.deleteMany({
-    where: { roleId }
+    where: { roleId },
   });
 
   await prisma.rolePermission.createMany({
-    data: data.permissionIds.map(permissionId => ({
+    data: data.permissionIds.map((permissionId) => ({
       roleId,
-      permissionId
-    }))
+      permissionId,
+    })),
   });
 
   const updatedRole = await getRoleById(roleId);
 
   const allPermissions = await prisma.permission.findMany({
-    orderBy: { name: 'asc' }
+    orderBy: { name: "asc" },
   });
 
   return {
     role: updatedRole,
     assignedPermissions: updatedRole.permissions || [],
-    availablePermissions: allPermissions.map(mapToPermissionResponse)
+    availablePermissions: allPermissions.map(mapToPermissionResponse),
   };
 };
 
 export const getAllPermissions = async (): Promise<PermissionResponse[]> => {
   const permissions = await prisma.permission.findMany({
-    orderBy: { name: 'asc' }
+    orderBy: { name: "asc" },
   });
 
   return permissions.map(mapToPermissionResponse);

@@ -7,7 +7,7 @@ export const createCommentSchema = Joi.object({
 export const commentListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
-  sortOrder: Joi.string().valid('asc', 'desc').default('asc'),
+  sortOrder: Joi.string().valid("asc", "desc").default("asc"),
 });
 
 export const taskCommentParamSchema = Joi.object({

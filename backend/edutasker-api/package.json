@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "bun --hot run src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -15,7 +18,9 @@
     "@types/node": "^24.3.1",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
-    "prisma": "^6.16.1"
+    "prettier": "^3.6.2",
+    "prisma": "^6.16.1",
+    "tsx": "^4.20.5"
   },
   "peerDependencies": {
     "typescript": "^5.9.2"

@@ -4,7 +4,7 @@ import Joi from "joi";
 export function validate<
   TParams extends Record<string, string> = {},
   TQuery extends Record<string, unknown> = {},
-  TBody extends Record<string, unknown> = {}
+  TBody extends Record<string, unknown> = {},
 >(schemas: {
   params?: Joi.ObjectSchema<TParams>;
   query?: Joi.ObjectSchema<TQuery>;

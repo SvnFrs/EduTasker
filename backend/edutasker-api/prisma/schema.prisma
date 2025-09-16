@@ -14,13 +14,34 @@ enum Action {
   DELETE
 }
 
-model Role {
-  id          String           @id @default(uuid()) @map("id")
-  name        String           @unique @map("name")
-  users       UserRole[]
-  permissions RolePermission[]
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
 
-  @@map("role")
+enum ProjectRole {
+  LEADER
+  MEMBER
+  MENTOR
+}
+
+enum ProjectAction {
+  READ
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model Role {
+  id    String     @id @default(uuid()) @map("id")
+  name  String     @map("name")
+  code  String     @map("code")
+  users UserRole[]
+
+  @@unique([name, code])
+  @@map("roles")
 }
 
 model UserRole {
@@ -32,31 +53,7 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
-  @@map("user_role")
-}
-
-model Permission {
-  id          String @id @default(uuid()) @map("id")
-  name        String @unique @map("name")
-  action      Action @map("action")
-  pathRegex   String @map("path_regex")
-  description String? @map("description")
-
-  roles RolePermission[]
-
-  @@map("permission")
-}
-
-model RolePermission {
-  id           String @id @default(uuid()) @map("id")
-  roleId       String @map("role_id")
-  permissionId String @map("permission_id")
-
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, permissionId])
-  @@map("role_permission")
+  @@map("user_roles")
 }
 
 model User {
@@ -68,16 +65,45 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  roles           UserRole[]
-  projectsCreated Project[]      @relation("ProjectCreatedBy")
-  projectMembers  ProjectMember[]
-  tasksCreated    Task[]         @relation("TaskCreatedBy")
-  taskAssignees   TaskAssignee[]
-  comments        Comment[]
-  files           File[]
-  notifications   Notification[]
+  roles             UserRole[]
+  projectsCreated   Project[]           @relation("ProjectCreatedBy")
+  projectMembers    ProjectMember[]
+  tasksCreated      Task[]              @relation("TaskCreatedBy")
+  taskAssignees     TaskAssignee[]
+  comments          Comment[]
+  files             File[]
+  notifications     Notification[]
+  Mentor            Mentor?
+  Student           Student?
+  ProjectMentor     ProjectMentor[]
+  ProjectPermission ProjectPermission[]
 
-  @@map("user")
+  @@map("users")
+}
+
+model Student {
+  id          String @id @default(uuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String @map("name")
+  schoolEmail String @map("school_email")
+  studentCode String @unique
+  majorCode   String @map("major_code")
+  joinYear    Int    @map("join_year")
+
+  @@map("students")
+}
+
+model Mentor {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expertise String?
+  bio       String?
+  verified  Boolean @default(false)
+
+  @@map("mentors")
 }
 
 model Project {
@@ -87,53 +113,101 @@ model Project {
   status      String    @default("active") @map("status")
   deadline    DateTime? @map("deadline")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  createdById String?   @map("created_by_id")
-  createdBy   User?     @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("ProjectCreatedBy", fields: [createdById], references: [id])
 
-  members ProjectMember[]
-  tasks   Task[]
-  files   File[]
+  members           ProjectMember[]
+  tasks             Task[]
+  files             File[]
+  Board             Board[]
+  ProjectMentor     ProjectMentor[]
+  ProjectPermission ProjectPermission[]
 
-  @@map("project")
+  @@map("projects")
+}
+
+model ProjectPermission {
+  id        String  @id @default(uuid())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+
+  action   ProjectAction
+  resource String
+
+  @@unique([projectId, userId, action, resource])
+  @@map("project_permissions")
 }
 
 model ProjectMember {
-  id        String   @id @default(uuid()) @map("id")
-  role      String   @default("member") @map("role")
-  joinedAt  DateTime @default(now()) @map("joined_at")
+  id       String   @id @default(uuid()) @map("id")
+  role     String   @default("member") @map("role")
+  joinedAt DateTime @default(now()) @map("joined_at")
 
-  projectId String   @map("project_id")
-  userId    String   @map("user_id")
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String  @map("project_id")
+  userId    String  @map("user_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
-  @@map("project_member")
+  @@map("project_members")
+}
+
+model ProjectMentor {
+  id       String   @id @default(uuid()) @map("id")
+  role     String   @default("mentor") @map("role")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  projectId String  @map("project_id")
+  userId    String  @map("user_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_mentors")
+}
+
+model Board {
+  id    String @id @default(uuid())
+  name  String
+  order Int    @default(0)
+
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@unique([projectId, order])
+  @@map("boards")
 }
 
 model Task {
-  id          String   @id @default(uuid()) @map("id")
-  title       String   @map("title")
-  description String?  @map("description")
-  status      String   @default("todo") @map("status")
-  priority    String   @default("medium") @map("priority")
-  dueDate     DateTime? @map("due_date")
+  id          String       @id @default(uuid()) @map("id")
+  title       String       @map("title")
+  description String?      @map("description")
+  status      String       @default("todo") @map("status")
+  priority    TaskPriority @default(MEDIUM) @map("priority")
+  dueDate     DateTime?    @map("due_date")
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  projectId   String   @map("project_id")
-  createdById String?  @map("created_by_id")
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   User?    @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  projectId   String  @map("project_id")
+  createdById String? @map("created_by_id")
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User?   @relation("TaskCreatedBy", fields: [createdById], references: [id])
 
   assignees TaskAssignee[]
   comments  Comment[]
+  Board     Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String         @map("board_id")
+  order     Int
 
-  @@map("task")
+  @@unique([boardId, order])
+  @@map("tasks")
 }
 
 model TaskAssignee {
@@ -146,7 +220,7 @@ model TaskAssignee {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, userId])
-  @@map("task_assignee")
+  @@map("task_assignees")
 }
 
 model Comment {
@@ -159,21 +233,21 @@ model Comment {
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("comment")
+  @@map("comments")
 }
 
 model File {
-  id          String   @id @default(uuid()) @map("id")
-  fileName    String   @map("file_name")
-  fileUrl     String   @map("file_url")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid()) @map("id")
+  fileName  String   @map("file_name")
+  fileUrl   String   @map("file_url")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  projectId   String   @map("project_id")
+  projectId    String  @map("project_id")
   uploadedById String? @map("uploaded_by_id")
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  uploadedBy  User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
 
-  @@map("file")
+  @@map("files")
 }
 
 model Notification {
@@ -186,5 +260,5 @@ model Notification {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("notification")
+  @@map("notifications")
 }

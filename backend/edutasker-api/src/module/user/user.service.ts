@@ -1,6 +1,14 @@
 import bcrypt from "bcryptjs";
-import { prisma } from '../../config/database.js';
-import type { UpdateProfileDTO, ChangePasswordDTO, UserProfileResponse, UpdateAvatarDTO, UserListQuery, UserListResponse, UpdateUserByIdDTO } from './user.type.js';
+import { prisma } from "../../config/database.js";
+import type {
+  UpdateProfileDTO,
+  ChangePasswordDTO,
+  UserProfileResponse,
+  UpdateAvatarDTO,
+  UserListQuery,
+  UserListResponse,
+  UpdateUserByIdDTO,
+} from "./user.type.js";
 
 const mapToUserProfileResponse = (user: {
   id: string;
@@ -38,9 +46,12 @@ export const getUserProfile = async (userId: string): Promise<UserProfileRespons
   return mapToUserProfileResponse(user);
 };
 
-export const updateUserProfile = async (userId: string, data: UpdateProfileDTO): Promise<UserProfileResponse> => {
+export const updateUserProfile = async (
+  userId: string,
+  data: UpdateProfileDTO,
+): Promise<UserProfileResponse> => {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {
@@ -66,9 +77,12 @@ export const updateUserProfile = async (userId: string, data: UpdateProfileDTO):
   return mapToUserProfileResponse(updatedUser);
 };
 
-export const changeUserPassword = async (userId: string, data: ChangePasswordDTO): Promise<void> => {
+export const changeUserPassword = async (
+  userId: string,
+  data: ChangePasswordDTO,
+): Promise<void> => {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {
@@ -90,9 +104,12 @@ export const changeUserPassword = async (userId: string, data: ChangePasswordDTO
   });
 };
 
-export const updateUserAvatar = async (userId: string, data: UpdateAvatarDTO): Promise<UserProfileResponse> => {
+export const updateUserAvatar = async (
+  userId: string,
+  data: UpdateAvatarDTO,
+): Promise<UserProfileResponse> => {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {
@@ -122,12 +139,14 @@ export const getAllUsers = async (query: UserListQuery): Promise<UserListRespons
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
 
-  const where = query.search ? {
-    OR: [
-      { name: { contains: query.search, mode: 'insensitive' as const } },
-      { email: { contains: query.search, mode: 'insensitive' as const } }
-    ]
-  } : {};
+  const where = query.search
+    ? {
+        OR: [
+          { name: { contains: query.search, mode: "insensitive" as const } },
+          { email: { contains: query.search, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
 
   const [users, total] = await Promise.all([
     prisma.user.findMany({
@@ -142,9 +161,9 @@ export const getAllUsers = async (query: UserListQuery): Promise<UserListRespons
       },
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     }),
-    prisma.user.count({ where })
+    prisma.user.count({ where }),
   ]);
 
   return {
@@ -152,7 +171,7 @@ export const getAllUsers = async (query: UserListQuery): Promise<UserListRespons
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   };
 };
 
@@ -176,9 +195,12 @@ export const getUserById = async (userId: string): Promise<UserProfileResponse> 
   return mapToUserProfileResponse(user);
 };
 
-export const updateUserById = async (userId: string, data: UpdateUserByIdDTO): Promise<UserProfileResponse> => {
+export const updateUserById = async (
+  userId: string,
+  data: UpdateUserByIdDTO,
+): Promise<UserProfileResponse> => {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {
@@ -189,8 +211,8 @@ export const updateUserById = async (userId: string, data: UpdateUserByIdDTO): P
     const existingUser = await prisma.user.findUnique({
       where: {
         email: data.email,
-        NOT: { id: userId }
-      }
+        NOT: { id: userId },
+      },
     });
 
     if (existingUser) {
@@ -220,7 +242,7 @@ export const updateUserById = async (userId: string, data: UpdateUserByIdDTO): P
 
 export const deleteUserById = async (userId: string): Promise<void> => {
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { id: userId },
   });
 
   if (!user) {
@@ -228,6 +250,6 @@ export const deleteUserById = async (userId: string): Promise<void> => {
   }
 
   await prisma.user.delete({
-    where: { id: userId }
+    where: { id: userId },
   });
 };

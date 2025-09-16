@@ -21,7 +21,7 @@ export interface CreateCommentDTO {
 export interface CommentListQuery {
   page?: number;
   limit?: number;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface CommentListResponse {

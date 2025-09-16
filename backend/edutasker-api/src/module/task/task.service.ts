@@ -1,13 +1,14 @@
-import { prisma } from '../../config/database.js';
+import { prisma } from "../../config/database.js";
 import type {
   AssignTaskDTO,
   CreateTaskDTO,
+  MoveTaskDTO,
   TaskListQuery,
   TaskListResponse,
   TaskResponse,
   UpdateTaskDTO,
-  UpdateTaskStatusDTO
-} from './task.type.js';
+  UpdateTaskStatusDTO,
+} from "./task.type.js";
 
 const mapToTaskResponse = (task: any): TaskResponse => ({
   id: task.id,
@@ -22,11 +23,19 @@ const mapToTaskResponse = (task: any): TaskResponse => ({
     id: task.project.id,
     name: task.project.name,
   },
-  createdBy: task.createdBy ? {
-    id: task.createdBy.id,
-    name: task.createdBy.name,
-    email: task.createdBy.email,
-  } : undefined,
+  board: {
+    id: task.Board.id,
+    name: task.Board.name,
+    order: task.Board.order,
+  },
+  createdBy: task.createdBy
+    ? {
+        id: task.createdBy.id,
+        name: task.createdBy.name,
+        email: task.createdBy.email,
+      }
+    : undefined,
+  order: task.order,
   assignees: task.assignees?.map((assignee: any) => ({
     id: assignee.id,
     assignedAt: assignee.assignedAt,
@@ -35,7 +44,7 @@ const mapToTaskResponse = (task: any): TaskResponse => ({
       name: assignee.user.name,
       email: assignee.user.email,
       avatarUrl: assignee.user.avatarUrl ?? undefined,
-    }
+    },
   })),
   _count: task._count,
 });
@@ -43,15 +52,15 @@ const mapToTaskResponse = (task: any): TaskResponse => ({
 export const createTask = async (
   projectId: string,
   data: CreateTaskDTO,
-  createdById: string
+  createdById: string,
 ): Promise<TaskResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId: createdById }
-      }
-    }
+        where: { userId: createdById },
+      },
+    },
   });
 
   if (!project) {
@@ -62,12 +71,29 @@ export const createTask = async (
     throw new Error("You are not a member of this project");
   }
 
+  const board = await prisma.board.findUnique({
+    where: { id: data.boardId },
+  });
+
+  if (!board || board.projectId !== projectId) {
+    throw new Error("Board not found or doesn't belong to this project");
+  }
+
+  let taskOrder = data.order;
+  if (taskOrder === undefined) {
+    const lastTask = await prisma.task.findFirst({
+      where: { boardId: data.boardId },
+      orderBy: { order: "desc" },
+    });
+    taskOrder = (lastTask?.order || 0) + 1;
+  }
+
   if (data.assigneeIds && data.assigneeIds.length > 0) {
     const projectMembers = await prisma.projectMember.findMany({
       where: {
         projectId,
-        userId: { in: data.assigneeIds }
-      }
+        userId: { in: data.assigneeIds },
+      },
     });
 
     if (projectMembers.length !== data.assigneeIds.length) {
@@ -79,40 +105,49 @@ export const createTask = async (
     data: {
       title: data.title,
       description: data.description,
-      status: data.status || 'todo',
-      priority: data.priority || 'medium',
+      status: data.status || "todo",
+      priority: data.priority || "MEDIUM",
       dueDate: data.dueDate,
       projectId,
       createdById,
+      boardId: data.boardId,
+      order: taskOrder,
     },
     include: {
       project: {
         select: {
           id: true,
           name: true,
-        }
+        },
+      },
+      Board: {
+        select: {
+          id: true,
+          name: true,
+          order: true,
+        },
       },
       createdBy: {
         select: {
           id: true,
           name: true,
           email: true,
-        }
+        },
       },
       _count: {
         select: {
           comments: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (data.assigneeIds && data.assigneeIds.length > 0) {
     await prisma.taskAssignee.createMany({
-      data: data.assigneeIds.map(userId => ({
+      data: data.assigneeIds.map((userId) => ({
         taskId: task.id,
-        userId
-      }))
+        userId,
+      })),
     });
 
     const taskWithAssignees = await prisma.task.findUnique({
@@ -122,14 +157,21 @@ export const createTask = async (
           select: {
             id: true,
             name: true,
-          }
+          },
+        },
+        Board: {
+          select: {
+            id: true,
+            name: true,
+            order: true,
+          },
         },
         createdBy: {
           select: {
             id: true,
             name: true,
             email: true,
-          }
+          },
         },
         assignees: {
           include: {
@@ -139,16 +181,16 @@ export const createTask = async (
                 name: true,
                 email: true,
                 avatarUrl: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         _count: {
           select: {
             comments: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     return mapToTaskResponse(taskWithAssignees);
@@ -160,15 +202,15 @@ export const createTask = async (
 export const getTasksByProject = async (
   projectId: string,
   query: TaskListQuery,
-  userId: string
+  userId: string,
 ): Promise<TaskListResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -187,8 +229,8 @@ export const getTasksByProject = async (
 
   if (query.search) {
     where.OR = [
-      { title: { contains: query.search, mode: 'insensitive' } },
-      { description: { contains: query.search, mode: 'insensitive' } }
+      { title: { contains: query.search, mode: "insensitive" } },
+      { description: { contains: query.search, mode: "insensitive" } },
     ];
   }
 
@@ -200,11 +242,15 @@ export const getTasksByProject = async (
     where.priority = query.priority;
   }
 
+  if (query.boardId) {
+    where.boardId = query.boardId;
+  }
+
   if (query.assignedTo) {
     where.assignees = {
       some: {
-        userId: query.assignedTo
-      }
+        userId: query.assignedTo,
+      },
     };
   }
 
@@ -217,50 +263,46 @@ export const getTasksByProject = async (
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     switch (query.dueDate) {
-      case 'today':
+      case "today":
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
         where.dueDate = {
           gte: today,
-          lt: tomorrow
+          lt: tomorrow,
         };
         break;
-      case 'upcoming':
+      case "upcoming":
         where.dueDate = {
-          gte: now
+          gte: now,
         };
         break;
-      case 'overdue':
+      case "overdue":
         where.dueDate = {
-          lt: now
+          lt: now,
         };
         where.status = {
-          not: 'done'
+          not: "done",
         };
         break;
-      case 'this-week':
+      case "this-week":
         const weekEnd = new Date(today);
         weekEnd.setDate(today.getDate() + 7);
         where.dueDate = {
           gte: today,
-          lt: weekEnd
+          lt: weekEnd,
         };
         break;
     }
   }
 
-  const sortBy = query.sortBy || 'createdAt';
-  const sortOrder = query.sortOrder || 'desc';
+  const sortBy = query.sortBy || "createdAt";
+  const sortOrder = query.sortOrder || "desc";
 
   let orderBy: any = {};
-  if (sortBy === 'priority') {
-    // Custom priority ordering: urgent > high > medium > low
-    orderBy = {
-      priority: {
-        sort: sortOrder,
-        nulls: 'last'
-      }
-    };
+  if (sortBy === "priority") {
+    orderBy = [{ priority: sortOrder === "desc" ? "desc" : "asc" }];
+  } else if (sortBy === "order") {
+    orderBy = { order: sortOrder };
   } else {
     orderBy[sortBy] = sortOrder;
   }
@@ -273,14 +315,21 @@ export const getTasksByProject = async (
           select: {
             id: true,
             name: true,
-          }
+          },
+        },
+        Board: {
+          select: {
+            id: true,
+            name: true,
+            order: true,
+          },
         },
         createdBy: {
           select: {
             id: true,
             name: true,
             email: true,
-          }
+          },
         },
         assignees: {
           include: {
@@ -290,21 +339,21 @@ export const getTasksByProject = async (
                 name: true,
                 email: true,
                 avatarUrl: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         _count: {
           select: {
             comments: true,
-          }
-        }
+          },
+        },
       },
       skip,
       take: limit,
-      orderBy
+      orderBy,
     }),
-    prisma.task.count({ where })
+    prisma.task.count({ where }),
   ]);
 
   return {
@@ -312,22 +361,22 @@ export const getTasksByProject = async (
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   };
 };
 
 export const getTaskById = async (
   projectId: string,
   taskId: string,
-  userId: string
+  userId: string,
 ): Promise<TaskResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -341,21 +390,28 @@ export const getTaskById = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
+      projectId,
     },
     include: {
       project: {
         select: {
           id: true,
           name: true,
-        }
+        },
+      },
+      Board: {
+        select: {
+          id: true,
+          name: true,
+          order: true,
+        },
       },
       createdBy: {
         select: {
           id: true,
           name: true,
           email: true,
-        }
+        },
       },
       assignees: {
         include: {
@@ -365,15 +421,15 @@ export const getTaskById = async (
               name: true,
               email: true,
               avatarUrl: true,
-            }
-          }
-        }
+            },
+          },
+        },
       },
       _count: {
         select: {
           comments: true,
-        }
-      }
+        },
+      },
     },
   });
 
@@ -388,15 +444,15 @@ export const updateTask = async (
   projectId: string,
   taskId: string,
   data: UpdateTaskDTO,
-  userId: string
+  userId: string,
 ): Promise<TaskResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -410,8 +466,8 @@ export const updateTask = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -432,14 +488,21 @@ export const updateTask = async (
         select: {
           id: true,
           name: true,
-        }
+        },
+      },
+      Board: {
+        select: {
+          id: true,
+          name: true,
+          order: true,
+        },
       },
       createdBy: {
         select: {
           id: true,
           name: true,
           email: true,
-        }
+        },
       },
       assignees: {
         include: {
@@ -449,15 +512,15 @@ export const updateTask = async (
               name: true,
               email: true,
               avatarUrl: true,
-            }
-          }
-        }
+            },
+          },
+        },
       },
       _count: {
         select: {
           comments: true,
-        }
-      }
+        },
+      },
     },
   });
 
@@ -467,15 +530,15 @@ export const updateTask = async (
 export const deleteTask = async (
   projectId: string,
   taskId: string,
-  userId: string
+  userId: string,
 ): Promise<void> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -489,8 +552,8 @@ export const deleteTask = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -498,7 +561,7 @@ export const deleteTask = async (
   }
 
   await prisma.task.delete({
-    where: { id: taskId }
+    where: { id: taskId },
   });
 };
 
@@ -506,15 +569,15 @@ export const assignUsersToTask = async (
   projectId: string,
   taskId: string,
   data: AssignTaskDTO,
-  userId: string
+  userId: string,
 ): Promise<TaskResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -528,8 +591,8 @@ export const assignUsersToTask = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -539,8 +602,8 @@ export const assignUsersToTask = async (
   const projectMembers = await prisma.projectMember.findMany({
     where: {
       projectId,
-      userId: { in: data.userIds }
-    }
+      userId: { in: data.userIds },
+    },
   });
 
   if (projectMembers.length !== data.userIds.length) {
@@ -548,14 +611,14 @@ export const assignUsersToTask = async (
   }
 
   await prisma.taskAssignee.deleteMany({
-    where: { taskId }
+    where: { taskId },
   });
 
   await prisma.taskAssignee.createMany({
-    data: data.userIds.map(userId => ({
+    data: data.userIds.map((userId) => ({
       taskId,
-      userId
-    }))
+      userId,
+    })),
   });
 
   return getTaskById(projectId, taskId, userId);
@@ -565,15 +628,15 @@ export const updateTaskStatus = async (
   projectId: string,
   taskId: string,
   data: UpdateTaskStatusDTO,
-  userId: string
+  userId: string,
 ): Promise<TaskResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -587,8 +650,8 @@ export const updateTaskStatus = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -603,14 +666,21 @@ export const updateTaskStatus = async (
         select: {
           id: true,
           name: true,
-        }
+        },
+      },
+      Board: {
+        select: {
+          id: true,
+          name: true,
+          order: true,
+        },
       },
       createdBy: {
         select: {
           id: true,
           name: true,
           email: true,
-        }
+        },
       },
       assignees: {
         include: {
@@ -620,15 +690,107 @@ export const updateTaskStatus = async (
               name: true,
               email: true,
               avatarUrl: true,
-            }
-          }
-        }
+            },
+          },
+        },
       },
       _count: {
         select: {
           comments: true,
-        }
-      }
+        },
+      },
+    },
+  });
+
+  return mapToTaskResponse(updatedTask);
+};
+
+export const moveTask = async (
+  projectId: string,
+  taskId: string,
+  data: MoveTaskDTO,
+  userId: string,
+): Promise<TaskResponse> => {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      members: {
+        where: { userId },
+      },
+    },
+  });
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (project.members.length === 0) {
+    throw new Error("You are not a member of this project");
+  }
+
+  const task = await prisma.task.findUnique({
+    where: {
+      id: taskId,
+      projectId,
+    },
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  const board = await prisma.board.findUnique({
+    where: { id: data.boardId },
+  });
+
+  if (!board || board.projectId !== projectId) {
+    throw new Error("Board not found or doesn't belong to this project");
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      boardId: data.boardId,
+      order: data.order,
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      Board: {
+        select: {
+          id: true,
+          name: true,
+          order: true,
+        },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      assignees: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
     },
   });
 
