@@ -14,6 +14,13 @@ enum Action {
   DELETE
 }
 
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model Role {
   id          String           @id @default(uuid()) @map("id")
   name        String           @unique @map("name")
@@ -78,6 +85,7 @@ model User {
   notifications   Notification[]
   Mentor          Mentor?
   Student         Student?
+  Task            Task[]
 
   @@map("user")
 }
@@ -123,6 +131,7 @@ model Project {
   files    File[]
   Mentor   Mentor?         @relation(fields: [mentorId], references: [id])
   mentorId String?
+  Board    Board[]
 
   @@map("project")
 }
@@ -141,13 +150,24 @@ model ProjectMember {
   @@map("project_member")
 }
 
+model Board {
+  id    String @id @default(uuid())
+  name  String
+  order Int
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+}
+
 model Task {
-  id          String    @id @default(uuid()) @map("id")
-  title       String    @map("title")
-  description String?   @map("description")
-  status      String    @default("todo") @map("status")
-  priority    String    @default("medium") @map("priority")
-  dueDate     DateTime? @map("due_date")
+  id          String       @id @default(uuid()) @map("id")
+  title       String       @map("title")
+  description String?      @map("description")
+  status      String       @default("todo") @map("status")
+  priority    TaskPriority @default(MEDIUM) @map("priority")
+  dueDate     DateTime?    @map("due_date")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -159,6 +179,11 @@ model Task {
 
   assignees TaskAssignee[]
   comments  Comment[]
+  Board     Board?         @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String?
+  order     Int?
+  User      User?          @relation(fields: [userId], references: [id])
+  userId    String?
 
   @@map("task")
 }
