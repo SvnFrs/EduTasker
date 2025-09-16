@@ -36,10 +36,10 @@ model UserRole {
 }
 
 model Permission {
-  id          String @id @default(uuid()) @map("id")
-  name        String @unique @map("name")
-  action      Action @map("action")
-  pathRegex   String @map("path_regex")
+  id          String  @id @default(uuid()) @map("id")
+  name        String  @unique @map("name")
+  action      Action  @map("action")
+  pathRegex   String  @map("path_regex")
   description String? @map("description")
 
   roles RolePermission[]
@@ -69,15 +69,28 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   roles           UserRole[]
-  projectsCreated Project[]      @relation("ProjectCreatedBy")
+  projectsCreated Project[]       @relation("ProjectCreatedBy")
   projectMembers  ProjectMember[]
-  tasksCreated    Task[]         @relation("TaskCreatedBy")
+  tasksCreated    Task[]          @relation("TaskCreatedBy")
   taskAssignees   TaskAssignee[]
   comments        Comment[]
   files           File[]
   notifications   Notification[]
+  Mentor          Mentor?
 
   @@map("user")
+}
+
+model Mentor {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expertise String?
+  bio       String?
+  verified  Boolean @default(false)
+
+  projects Project[]
 }
 
 model Project {
@@ -87,48 +100,50 @@ model Project {
   status      String    @default("active") @map("status")
   deadline    DateTime? @map("deadline")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  createdById String?   @map("created_by_id")
-  createdBy   User?     @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("ProjectCreatedBy", fields: [createdById], references: [id])
 
-  members ProjectMember[]
-  tasks   Task[]
-  files   File[]
+  members  ProjectMember[]
+  tasks    Task[]
+  files    File[]
+  Mentor   Mentor?         @relation(fields: [mentorId], references: [id])
+  mentorId String?
 
   @@map("project")
 }
 
 model ProjectMember {
-  id        String   @id @default(uuid()) @map("id")
-  role      String   @default("member") @map("role")
-  joinedAt  DateTime @default(now()) @map("joined_at")
+  id       String   @id @default(uuid()) @map("id")
+  role     String   @default("member") @map("role")
+  joinedAt DateTime @default(now()) @map("joined_at")
 
-  projectId String   @map("project_id")
-  userId    String   @map("user_id")
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String  @map("project_id")
+  userId    String  @map("user_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@map("project_member")
 }
 
 model Task {
-  id          String   @id @default(uuid()) @map("id")
-  title       String   @map("title")
-  description String?  @map("description")
-  status      String   @default("todo") @map("status")
-  priority    String   @default("medium") @map("priority")
+  id          String    @id @default(uuid()) @map("id")
+  title       String    @map("title")
+  description String?   @map("description")
+  status      String    @default("todo") @map("status")
+  priority    String    @default("medium") @map("priority")
   dueDate     DateTime? @map("due_date")
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  projectId   String   @map("project_id")
-  createdById String?  @map("created_by_id")
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   User?    @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  projectId   String  @map("project_id")
+  createdById String? @map("created_by_id")
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User?   @relation("TaskCreatedBy", fields: [createdById], references: [id])
 
   assignees TaskAssignee[]
   comments  Comment[]
@@ -163,15 +178,15 @@ model Comment {
 }
 
 model File {
-  id          String   @id @default(uuid()) @map("id")
-  fileName    String   @map("file_name")
-  fileUrl     String   @map("file_url")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid()) @map("id")
+  fileName  String   @map("file_name")
+  fileUrl   String   @map("file_url")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  projectId   String   @map("project_id")
+  projectId    String  @map("project_id")
   uploadedById String? @map("uploaded_by_id")
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  uploadedBy  User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
 
   @@map("file")
 }
