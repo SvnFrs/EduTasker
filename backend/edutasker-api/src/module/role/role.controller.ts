@@ -1,6 +1,11 @@
 import type { Request, Response } from "express";
-import * as RoleService from './role.service.js';
-import type { CreateRoleDTO, UpdateRoleDTO, RoleListQuery, AssignPermissionsDTO } from './role.type.js';
+import * as RoleService from "./role.service.js";
+import type {
+  CreateRoleDTO,
+  UpdateRoleDTO,
+  RoleListQuery,
+  AssignPermissionsDTO,
+} from "./role.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const createRoleHandler = async (req: Request, res: Response) => {
@@ -57,5 +62,11 @@ export const listRoles = serviceWrapper(listRolesHandler, "Roles retrieved succe
 export const getRoleById = serviceWrapper(getRoleByIdHandler, "Role retrieved successfully");
 export const updateRole = serviceWrapper(updateRoleHandler, "Role updated successfully");
 export const deleteRole = serviceWrapper(deleteRoleHandler, "Role deleted successfully");
-export const assignPermissions = serviceWrapper(assignPermissionsHandler, "Permissions assigned successfully");
-export const listPermissions = serviceWrapper(listPermissionsHandler, "Permissions retrieved successfully");
+export const assignPermissions = serviceWrapper(
+  assignPermissionsHandler,
+  "Permissions assigned successfully",
+);
+export const listPermissions = serviceWrapper(
+  listPermissionsHandler,
+  "Permissions retrieved successfully",
+);

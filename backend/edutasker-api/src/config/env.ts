@@ -18,7 +18,7 @@ const validators = {
   JWT_EXPIRES_IN: Joi.number().default(1000),
   REDIS_HOST: Joi.string().default("localhost"),
   REDIS_PORT: Joi.number().default(6379),
-  REDIS_PASSWORD: Joi.string().default("")
+  REDIS_PASSWORD: Joi.string().default(""),
 };
 const configLoader = new ConfigLoader<EnvSchema>(validators, (env) => ({
   ...env,

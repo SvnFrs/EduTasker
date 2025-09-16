@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as CommentController from './comment.controller.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as CommentController from "./comment.controller.js";
 import {
   createCommentSchema,
   commentListQuerySchema,
   taskCommentParamSchema,
-  deleteCommentParamSchema
-} from './comment.schema.js';
+  deleteCommentParamSchema,
+} from "./comment.schema.js";
 
 const router = Router();
 
@@ -172,7 +172,12 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:projectId/tasks/:taskId/comments", authGuard, validate({ params: taskCommentParamSchema, body: createCommentSchema }), CommentController.createComment);
+router.post(
+  "/:projectId/tasks/:taskId/comments",
+  authGuard,
+  validate({ params: taskCommentParamSchema, body: createCommentSchema }),
+  CommentController.createComment,
+);
 
 /**
  * @openapi
@@ -272,7 +277,12 @@ router.post("/:projectId/tasks/:taskId/comments", authGuard, validate({ params: 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:projectId/tasks/:taskId/comments", authGuard, validate({ params: taskCommentParamSchema, query: commentListQuerySchema }), CommentController.listComments);
+router.get(
+  "/:projectId/tasks/:taskId/comments",
+  authGuard,
+  validate({ params: taskCommentParamSchema, query: commentListQuerySchema }),
+  CommentController.listComments,
+);
 
 /**
  * @openapi
@@ -356,6 +366,11 @@ router.get("/:projectId/tasks/:taskId/comments", authGuard, validate({ params: t
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:projectId/tasks/:taskId/comments/:commentId", authGuard, validate({ params: deleteCommentParamSchema }), CommentController.deleteComment);
+router.delete(
+  "/:projectId/tasks/:taskId/comments/:commentId",
+  authGuard,
+  validate({ params: deleteCommentParamSchema }),
+  CommentController.deleteComment,
+);
 
 export default router;

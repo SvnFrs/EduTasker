@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as RoleController from './role.controller.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as RoleController from "./role.controller.js";
 import {
   assignPermissionsSchema,
   createRoleSchema,
   roleIdParamSchema,
   roleListQuerySchema,
-  updateRoleSchema
-} from './role.schema.js';
+  updateRoleSchema,
+} from "./role.schema.js";
 
 const router = Router();
 
@@ -405,7 +405,12 @@ router.get("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleContr
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authGuard, validate({ params: roleIdParamSchema, body: updateRoleSchema }), RoleController.updateRole);
+router.put(
+  "/:id",
+  authGuard,
+  validate({ params: roleIdParamSchema, body: updateRoleSchema }),
+  RoleController.updateRole,
+);
 
 /**
  * @openapi
@@ -473,7 +478,12 @@ router.put("/:id", authGuard, validate({ params: roleIdParamSchema, body: update
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleController.deleteRole);
+router.delete(
+  "/:id",
+  authGuard,
+  validate({ params: roleIdParamSchema }),
+  RoleController.deleteRole,
+);
 
 /**
  * @openapi
@@ -562,7 +572,12 @@ router.delete("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleCo
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:id/permissions", authGuard, validate({ params: roleIdParamSchema, body: assignPermissionsSchema }), RoleController.assignPermissions);
+router.post(
+  "/:id/permissions",
+  authGuard,
+  validate({ params: roleIdParamSchema, body: assignPermissionsSchema }),
+  RoleController.assignPermissions,
+);
 
 /**
  * @openapi

@@ -1,8 +1,15 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as UserController from './user.controller.js';
-import { updateProfileSchema, changePasswordSchema, updateAvatarSchema, userListQuerySchema, userIdParamSchema, updateUserByIdSchema } from './user.schema.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as UserController from "./user.controller.js";
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  updateAvatarSchema,
+  userListQuerySchema,
+  userIdParamSchema,
+  updateUserByIdSchema,
+} from "./user.schema.js";
 
 const router = Router();
 
@@ -239,7 +246,12 @@ router.put("/me", authGuard, validate({ body: updateProfileSchema }), UserContro
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/me/password", authGuard, validate({ body: changePasswordSchema }), UserController.changePassword);
+router.put(
+  "/me/password",
+  authGuard,
+  validate({ body: changePasswordSchema }),
+  UserController.changePassword,
+);
 
 /**
  * @openapi
@@ -298,7 +310,12 @@ router.put("/me/password", authGuard, validate({ body: changePasswordSchema }), 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/me/avatar", authGuard, validate({ body: updateAvatarSchema }), UserController.updateAvatar);
+router.put(
+  "/me/avatar",
+  authGuard,
+  validate({ body: updateAvatarSchema }),
+  UserController.updateAvatar,
+);
 
 /**
  * @openapi
@@ -517,7 +534,12 @@ router.get("/:id", authGuard, validate({ params: userIdParamSchema }), UserContr
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authGuard, validate({ params: userIdParamSchema, body: updateUserByIdSchema }), UserController.updateUserById);
+router.put(
+  "/:id",
+  authGuard,
+  validate({ params: userIdParamSchema, body: updateUserByIdSchema }),
+  UserController.updateUserById,
+);
 
 /**
  * @openapi
@@ -579,6 +601,11 @@ router.put("/:id", authGuard, validate({ params: userIdParamSchema, body: update
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", authGuard, validate({ params: userIdParamSchema }), UserController.deleteUserById);
+router.delete(
+  "/:id",
+  authGuard,
+  validate({ params: userIdParamSchema }),
+  UserController.deleteUserById,
+);
 
 export default router;

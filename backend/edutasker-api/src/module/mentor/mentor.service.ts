@@ -1,4 +1,4 @@
-import { prisma } from '../../config/database.js';
+import { prisma } from "../../config/database.js";
 import type {
   CreateMentorDTO,
   MentorListQuery,
@@ -6,8 +6,8 @@ import type {
   MentorResponse,
   MentorWithProjectsResponse,
   UpdateMentorByIdDTO,
-  UpdateMentorDTO
-} from './mentor.type.js';
+  UpdateMentorDTO,
+} from "./mentor.type.js";
 
 const mapToMentorResponse = (mentor: {
   id: string;
@@ -37,7 +37,7 @@ const mapToMentorResponse = (mentor: {
 
 export const createMentor = async (data: CreateMentorDTO): Promise<MentorResponse> => {
   const userExists = await prisma.user.findUnique({
-    where: { id: data.userId }
+    where: { id: data.userId },
   });
 
   if (!userExists) {
@@ -45,7 +45,7 @@ export const createMentor = async (data: CreateMentorDTO): Promise<MentorRespons
   }
 
   const existingMentor = await prisma.mentor.findUnique({
-    where: { userId: data.userId }
+    where: { userId: data.userId },
   });
 
   if (existingMentor) {
@@ -65,9 +65,9 @@ export const createMentor = async (data: CreateMentorDTO): Promise<MentorRespons
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return mapToMentorResponse(mentor);
@@ -83,9 +83,9 @@ export const getMentorById = async (id: string): Promise<MentorResponse> => {
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!mentor) {
@@ -105,9 +105,9 @@ export const getMentorByUserId = async (userId: string): Promise<MentorResponse>
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!mentor) {
@@ -127,7 +127,7 @@ export const getMentorWithProjects = async (id: string): Promise<MentorWithProje
           name: true,
           email: true,
           avatarUrl: true,
-        }
+        },
       },
       projects: {
         select: {
@@ -137,9 +137,9 @@ export const getMentorWithProjects = async (id: string): Promise<MentorWithProje
           status: true,
           deadline: true,
           createdAt: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!mentor) {
@@ -148,29 +148,29 @@ export const getMentorWithProjects = async (id: string): Promise<MentorWithProje
 
   return {
     ...mapToMentorResponse(mentor),
-    projects: mentor.projects.map(project => ({
+    projects: mentor.projects.map((project) => ({
       ...project,
       description: project.description ?? undefined,
       deadline: project.deadline ?? undefined,
-    }))
+    })),
   };
 };
 
 export const getAllMentors = async (query: MentorListQuery): Promise<MentorListResponse> => {
-  const page = parseInt(query.page || '1');
-  const limit = parseInt(query.limit || '10');
+  const page = parseInt(query.page || "1");
+  const limit = parseInt(query.limit || "10");
   const skip = (page - 1) * limit;
 
   const where: any = {};
 
   if (query.verified !== undefined) {
-    where.verified = query.verified === 'true';
+    where.verified = query.verified === "true";
   }
 
   if (query.expertise) {
     where.expertise = {
       contains: query.expertise,
-      mode: 'insensitive'
+      mode: "insensitive",
     };
   }
 
@@ -180,22 +180,22 @@ export const getAllMentors = async (query: MentorListQuery): Promise<MentorListR
         user: {
           name: {
             contains: query.search,
-            mode: 'insensitive'
-          }
-        }
+            mode: "insensitive",
+          },
+        },
       },
       {
         expertise: {
           contains: query.search,
-          mode: 'insensitive'
-        }
+          mode: "insensitive",
+        },
       },
       {
         bio: {
           contains: query.search,
-          mode: 'insensitive'
-        }
-      }
+          mode: "insensitive",
+        },
+      },
     ];
   }
 
@@ -209,34 +209,37 @@ export const getAllMentors = async (query: MentorListQuery): Promise<MentorListR
             name: true,
             email: true,
             avatarUrl: true,
-          }
-        }
+          },
+        },
       },
       skip,
       take: limit,
       orderBy: {
         user: {
-          name: 'asc'
-        }
-      }
+          name: "asc",
+        },
+      },
     }),
-    prisma.mentor.count({ where })
+    prisma.mentor.count({ where }),
   ]);
 
   return {
-    mentors: mentors.map(mentor => mapToMentorResponse(mentor)),
+    mentors: mentors.map((mentor) => mapToMentorResponse(mentor)),
     pagination: {
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit)
-    }
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
 
-export const updateMentor = async (userId: string, data: UpdateMentorDTO): Promise<MentorResponse> => {
+export const updateMentor = async (
+  userId: string,
+  data: UpdateMentorDTO,
+): Promise<MentorResponse> => {
   const mentor = await prisma.mentor.findUnique({
-    where: { userId }
+    where: { userId },
   });
 
   if (!mentor) {
@@ -256,17 +259,20 @@ export const updateMentor = async (userId: string, data: UpdateMentorDTO): Promi
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return mapToMentorResponse(updatedMentor);
 };
 
-export const updateMentorById = async (id: string, data: UpdateMentorByIdDTO): Promise<MentorResponse> => {
+export const updateMentorById = async (
+  id: string,
+  data: UpdateMentorByIdDTO,
+): Promise<MentorResponse> => {
   const mentor = await prisma.mentor.findUnique({
-    where: { id }
+    where: { id },
   });
 
   if (!mentor) {
@@ -287,9 +293,9 @@ export const updateMentorById = async (id: string, data: UpdateMentorByIdDTO): P
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return mapToMentorResponse(updatedMentor);
@@ -297,7 +303,7 @@ export const updateMentorById = async (id: string, data: UpdateMentorByIdDTO): P
 
 export const deleteMentorById = async (id: string): Promise<void> => {
   const mentor = await prisma.mentor.findUnique({
-    where: { id }
+    where: { id },
   });
 
   if (!mentor) {
@@ -305,7 +311,7 @@ export const deleteMentorById = async (id: string): Promise<void> => {
   }
 
   await prisma.mentor.delete({
-    where: { id }
+    where: { id },
   });
 };
 
@@ -327,16 +333,16 @@ export const getVerifiedMentors = async (limit: number = 10): Promise<MentorResp
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
+        },
+      },
     },
     take: limit,
     orderBy: {
       user: {
-        name: 'asc'
-      }
-    }
+        name: "asc",
+      },
+    },
   });
 
-  return mentors.map(mentor => mapToMentorResponse(mentor));
+  return mentors.map((mentor) => mapToMentorResponse(mentor));
 };

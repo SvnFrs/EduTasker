@@ -21,13 +21,25 @@ enum TaskPriority {
   CRITICAL
 }
 
-model Role {
-  id          String           @id @default(uuid()) @map("id")
-  name        String           @unique @map("name")
-  users       UserRole[]
-  permissions RolePermission[]
+enum ProjectRole {
+  LEADER
+  MEMBER
+  MENTOR
+}
 
-  @@map("role")
+enum ProjectAction {
+  READ
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model Role {
+  id    String     @id @default(uuid()) @map("id")
+  name  String     @unique @map("name")
+  users UserRole[]
+
+  @@map("roles")
 }
 
 model UserRole {
@@ -39,31 +51,7 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
-  @@map("user_role")
-}
-
-model Permission {
-  id          String  @id @default(uuid()) @map("id")
-  name        String  @unique @map("name")
-  action      Action  @map("action")
-  pathRegex   String  @map("path_regex")
-  description String? @map("description")
-
-  roles RolePermission[]
-
-  @@map("permission")
-}
-
-model RolePermission {
-  id           String @id @default(uuid()) @map("id")
-  roleId       String @map("role_id")
-  permissionId String @map("permission_id")
-
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, permissionId])
-  @@map("role_permission")
+  @@map("user_roles")
 }
 
 model User {
@@ -75,19 +63,20 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  roles           UserRole[]
-  projectsCreated Project[]       @relation("ProjectCreatedBy")
-  projectMembers  ProjectMember[]
-  tasksCreated    Task[]          @relation("TaskCreatedBy")
-  taskAssignees   TaskAssignee[]
-  comments        Comment[]
-  files           File[]
-  notifications   Notification[]
-  Mentor          Mentor?
-  Student         Student?
-  Task            Task[]
+  roles             UserRole[]
+  projectsCreated   Project[]           @relation("ProjectCreatedBy")
+  projectMembers    ProjectMember[]
+  tasksCreated      Task[]              @relation("TaskCreatedBy")
+  taskAssignees     TaskAssignee[]
+  comments          Comment[]
+  files             File[]
+  notifications     Notification[]
+  Mentor            Mentor?
+  Student           Student?
+  ProjectMentor     ProjectMentor[]
+  ProjectPermission ProjectPermission[]
 
-  @@map("user")
+  @@map("users")
 }
 
 model Student {
@@ -99,6 +88,8 @@ model Student {
   studentCode String @unique
   majorCode   String @map("major_code")
   joinYear    Int    @map("join_year")
+
+  @@map("students")
 }
 
 model Mentor {
@@ -110,7 +101,7 @@ model Mentor {
   bio       String?
   verified  Boolean @default(false)
 
-  projects Project[]
+  @@map("mentors")
 }
 
 model Project {
@@ -126,14 +117,28 @@ model Project {
   createdById String? @map("created_by_id")
   createdBy   User?   @relation("ProjectCreatedBy", fields: [createdById], references: [id])
 
-  members  ProjectMember[]
-  tasks    Task[]
-  files    File[]
-  Mentor   Mentor?         @relation(fields: [mentorId], references: [id])
-  mentorId String?
-  Board    Board[]
+  members           ProjectMember[]
+  tasks             Task[]
+  files             File[]
+  Board             Board[]
+  ProjectMentor     ProjectMentor[]
+  ProjectPermission ProjectPermission[]
 
-  @@map("project")
+  @@map("projects")
+}
+
+model ProjectPermission {
+  id        String  @id @default(uuid())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+
+  action   ProjectAction
+  resource String
+
+  @@unique([projectId, userId, action, resource])
+  @@map("project_permissions")
 }
 
 model ProjectMember {
@@ -147,18 +152,34 @@ model ProjectMember {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
-  @@map("project_member")
+  @@map("project_members")
+}
+
+model ProjectMentor {
+  id       String   @id @default(uuid()) @map("id")
+  role     String   @default("mentor") @map("role")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  projectId String  @map("project_id")
+  userId    String  @map("user_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_mentors")
 }
 
 model Board {
   id    String @id @default(uuid())
   name  String
-  order Int
+  order Int    @default(0)
 
-  projectId String
+  projectId String  @map("project_id")
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
 
-  tasks Task[]
+  @@unique([projectId, order])
+  @@map("boards")
 }
 
 model Task {
@@ -179,13 +200,12 @@ model Task {
 
   assignees TaskAssignee[]
   comments  Comment[]
-  Board     Board?         @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId   String?
-  order     Int?
-  User      User?          @relation(fields: [userId], references: [id])
-  userId    String?
+  Board     Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId   String         @map("board_id")
+  order     Int
 
-  @@map("task")
+  @@unique([boardId, order])
+  @@map("tasks")
 }
 
 model TaskAssignee {
@@ -198,7 +218,7 @@ model TaskAssignee {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, userId])
-  @@map("task_assignee")
+  @@map("task_assignees")
 }
 
 model Comment {
@@ -211,7 +231,7 @@ model Comment {
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("comment")
+  @@map("comments")
 }
 
 model File {
@@ -225,7 +245,7 @@ model File {
   project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   uploadedBy   User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
 
-  @@map("file")
+  @@map("files")
 }
 
 model Notification {
@@ -238,5 +258,5 @@ model Notification {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("notification")
+  @@map("notifications")
 }

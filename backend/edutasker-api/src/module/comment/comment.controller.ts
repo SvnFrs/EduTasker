@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import * as CommentService from './comment.service.js';
-import type { CreateCommentDTO, CommentListQuery } from './comment.type.js';
+import * as CommentService from "./comment.service.js";
+import type { CreateCommentDTO, CommentListQuery } from "./comment.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const createCommentHandler = async (req: Request, res: Response) => {

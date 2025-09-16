@@ -1,10 +1,10 @@
-import { prisma } from '../../config/database.js';
+import { prisma } from "../../config/database.js";
 import type {
   CommentListQuery,
   CommentListResponse,
   CommentResponse,
-  CreateCommentDTO
-} from './comment.type.js';
+  CreateCommentDTO,
+} from "./comment.type.js";
 
 const mapToCommentResponse = (comment: any): CommentResponse => ({
   id: comment.id,
@@ -19,22 +19,22 @@ const mapToCommentResponse = (comment: any): CommentResponse => ({
     name: comment.user.name,
     email: comment.user.email,
     avatarUrl: comment.user.avatarUrl ?? undefined,
-  }
+  },
 });
 
 export const createComment = async (
   projectId: string,
   taskId: string,
   data: CreateCommentDTO,
-  userId: string
+  userId: string,
 ): Promise<CommentResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -48,8 +48,8 @@ export const createComment = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -67,7 +67,7 @@ export const createComment = async (
         select: {
           id: true,
           title: true,
-        }
+        },
       },
       user: {
         select: {
@@ -75,9 +75,9 @@ export const createComment = async (
           name: true,
           email: true,
           avatarUrl: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return mapToCommentResponse(comment);
@@ -87,15 +87,15 @@ export const getCommentsByTask = async (
   projectId: string,
   taskId: string,
   query: CommentListQuery,
-  userId: string
+  userId: string,
 ): Promise<CommentListResponse> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -109,8 +109,8 @@ export const getCommentsByTask = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -120,7 +120,7 @@ export const getCommentsByTask = async (
   const page = query.page || 1;
   const limit = query.limit || 20;
   const skip = (page - 1) * limit;
-  const sortOrder = query.sortOrder || 'asc';
+  const sortOrder = query.sortOrder || "asc";
 
   const where = { taskId };
 
@@ -132,7 +132,7 @@ export const getCommentsByTask = async (
           select: {
             id: true,
             title: true,
-          }
+          },
         },
         user: {
           select: {
@@ -140,14 +140,14 @@ export const getCommentsByTask = async (
             name: true,
             email: true,
             avatarUrl: true,
-          }
-        }
+          },
+        },
       },
       skip,
       take: limit,
-      orderBy: { createdAt: sortOrder }
+      orderBy: { createdAt: sortOrder },
     }),
-    prisma.comment.count({ where })
+    prisma.comment.count({ where }),
   ]);
 
   return {
@@ -155,7 +155,7 @@ export const getCommentsByTask = async (
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   };
 };
 
@@ -163,16 +163,16 @@ export const deleteComment = async (
   projectId: string,
   taskId: string,
   commentId: string,
-  userId: string
+  userId: string,
 ): Promise<void> => {
   // Verify project exists and user has access
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
       members: {
-        where: { userId }
-      }
-    }
+        where: { userId },
+      },
+    },
   });
 
   if (!project) {
@@ -186,8 +186,8 @@ export const deleteComment = async (
   const task = await prisma.task.findUnique({
     where: {
       id: taskId,
-      projectId
-    }
+      projectId,
+    },
   });
 
   if (!task) {
@@ -197,8 +197,8 @@ export const deleteComment = async (
   const comment = await prisma.comment.findUnique({
     where: {
       id: commentId,
-      taskId
-    }
+      taskId,
+    },
   });
 
   if (!comment) {
@@ -210,8 +210,8 @@ export const deleteComment = async (
     where: {
       projectId,
       userId,
-      role: 'admin'
-    }
+      role: "admin",
+    },
   });
 
   if (!isCommentAuthor && !isProjectAdmin) {
@@ -219,6 +219,6 @@ export const deleteComment = async (
   }
 
   await prisma.comment.delete({
-    where: { id: commentId }
+    where: { id: commentId },
   });
 };

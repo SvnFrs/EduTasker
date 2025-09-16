@@ -20,7 +20,7 @@ export const updateMentorByIdSchema = Joi.object({
 export const mentorListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
-  verified: Joi.string().valid('true', 'false').optional(),
+  verified: Joi.string().valid("true", "false").optional(),
   expertise: Joi.string().optional(),
   search: Joi.string().optional(),
 });

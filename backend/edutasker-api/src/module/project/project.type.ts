@@ -12,13 +12,29 @@ export interface ProjectResponse {
     email: string;
   };
   members?: ProjectMemberResponse[];
+  mentors?: ProjectMentorResponse[];
+  boards?: BoardResponse[];
   _count?: {
     tasks: number;
     members: number;
+    mentors: number;
+    boards: number;
   };
 }
 
 export interface ProjectMemberResponse {
+  id: string;
+  role: "LEADER" | "MEMBER";
+  joinedAt: Date;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+  };
+}
+
+export interface ProjectMentorResponse {
   id: string;
   role: string;
   joinedAt: Date;
@@ -27,6 +43,24 @@ export interface ProjectMemberResponse {
     name: string;
     email: string;
     avatarUrl?: string;
+  };
+}
+
+export interface BoardResponse {
+  id: string;
+  name: string;
+  order: number;
+  projectId: string;
+}
+
+export interface ProjectPermissionResponse {
+  id: string;
+  action: "READ" | "CREATE" | "UPDATE" | "DELETE";
+  resource: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
   };
 }
 
@@ -51,7 +85,7 @@ export interface ProjectListQuery {
   status?: string;
   createdBy?: string;
   userId?: string;
-  deadline?: 'upcoming' | 'overdue' | 'this-week' | 'this-month';
+  deadline?: "upcoming" | "overdue" | "this-week" | "this-month";
 }
 
 export interface ProjectListResponse {
@@ -64,7 +98,28 @@ export interface ProjectListResponse {
 
 export interface AddMemberDTO {
   userId: string;
+  role?: "LEADER" | "MEMBER";
+}
+
+export interface AddMentorDTO {
+  userId: string;
   role?: string;
+}
+
+export interface CreateBoardDTO {
+  name: string;
+  order?: number;
+}
+
+export interface UpdateBoardDTO {
+  name?: string;
+  order?: number;
+}
+
+export interface AssignPermissionDTO {
+  userId: string;
+  action: "READ" | "CREATE" | "UPDATE" | "DELETE";
+  resource: string;
 }
 
 export interface ProjectStats {
@@ -72,4 +127,17 @@ export interface ProjectStats {
   activeProjects: number;
   completedProjects: number;
   overdueProjects: number;
+}
+
+export enum ProjectRole {
+  MEMBER = "MEMBER",
+  MENTOR = "MENTOR",
+  ADMIN = "ADMIN",
+}
+
+export enum ProjectAction {
+  READ = "READ",
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
 }

@@ -143,9 +143,15 @@ const router = Router();
  *               code: "400"
  *               success: false
  */
-router.post("/register", [validate({
-  body: registerSchema
-})], AuthController.register);
+router.post(
+  "/register",
+  [
+    validate({
+      body: registerSchema,
+    }),
+  ],
+  AuthController.register,
+);
 
 /**
  * @openapi
@@ -205,9 +211,13 @@ router.post("/register", [validate({
  *               code: "400"
  *               success: false
  */
-router.post("/login", validate({
-  body: loginSchema
-}), AuthController.login);
+router.post(
+  "/login",
+  validate({
+    body: loginSchema,
+  }),
+  AuthController.login,
+);
 
 /**
  * @openapi

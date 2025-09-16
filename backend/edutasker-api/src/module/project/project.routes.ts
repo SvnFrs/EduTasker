@@ -1,15 +1,15 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as ProjectController from './project.controller.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as ProjectController from "./project.controller.js";
 import {
   createProjectSchema,
   updateProjectSchema,
   projectListQuerySchema,
   projectIdParamSchema,
   addMemberSchema,
-  removeMemberParamSchema
-} from './project.schema.js';
+  removeMemberParamSchema,
+} from "./project.schema.js";
 
 const router = Router();
 
@@ -173,7 +173,12 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/", authGuard, validate({ body: createProjectSchema }), ProjectController.createProject);
+router.post(
+  "/",
+  authGuard,
+  validate({ body: createProjectSchema }),
+  ProjectController.createProject,
+);
 
 /**
  * @openapi
@@ -260,7 +265,12 @@ router.post("/", authGuard, validate({ body: createProjectSchema }), ProjectCont
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/", authGuard, validate({ query: projectListQuerySchema }), ProjectController.listProjects);
+router.get(
+  "/",
+  authGuard,
+  validate({ query: projectListQuerySchema }),
+  ProjectController.listProjects,
+);
 
 /**
  * @openapi
@@ -332,7 +342,12 @@ router.get("/", authGuard, validate({ query: projectListQuerySchema }), ProjectC
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id", authGuard, validate({ params: projectIdParamSchema }), ProjectController.getProjectById);
+router.get(
+  "/:id",
+  authGuard,
+  validate({ params: projectIdParamSchema }),
+  ProjectController.getProjectById,
+);
 
 /**
  * @openapi
@@ -428,7 +443,12 @@ router.get("/:id", authGuard, validate({ params: projectIdParamSchema }), Projec
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authGuard, validate({ params: projectIdParamSchema, body: updateProjectSchema }), ProjectController.updateProject);
+router.put(
+  "/:id",
+  authGuard,
+  validate({ params: projectIdParamSchema, body: updateProjectSchema }),
+  ProjectController.updateProject,
+);
 
 /**
  * @openapi
@@ -496,7 +516,12 @@ router.put("/:id", authGuard, validate({ params: projectIdParamSchema, body: upd
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", authGuard, validate({ params: projectIdParamSchema }), ProjectController.deleteProject);
+router.delete(
+  "/:id",
+  authGuard,
+  validate({ params: projectIdParamSchema }),
+  ProjectController.deleteProject,
+);
 
 /**
  * @openapi
@@ -588,7 +613,12 @@ router.delete("/:id", authGuard, validate({ params: projectIdParamSchema }), Pro
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:id/members", authGuard, validate({ params: projectIdParamSchema, body: addMemberSchema }), ProjectController.addMember);
+router.post(
+  "/:id/members",
+  authGuard,
+  validate({ params: projectIdParamSchema, body: addMemberSchema }),
+  ProjectController.addMember,
+);
 
 /**
  * @openapi
@@ -664,6 +694,11 @@ router.post("/:id/members", authGuard, validate({ params: projectIdParamSchema, 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id/members/:userId", authGuard, validate({ params: removeMemberParamSchema }), ProjectController.removeMember);
+router.delete(
+  "/:id/members/:userId",
+  authGuard,
+  validate({ params: removeMemberParamSchema }),
+  ProjectController.removeMember,
+);
 
 export default router;

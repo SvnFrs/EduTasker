@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const updateProfileSchema = Joi.object({
   name: Joi.string().min(1).max(255).optional(),
-  avatarUrl: Joi.string().uri().optional().allow(''),
+  avatarUrl: Joi.string().uri().optional().allow(""),
 });
 
 export const changePasswordSchema = Joi.object({
@@ -27,5 +27,5 @@ export const userIdParamSchema = Joi.object({
 export const updateUserByIdSchema = Joi.object({
   name: Joi.string().min(1).max(255).optional(),
   email: Joi.string().email().optional(),
-  avatarUrl: Joi.string().uri().optional().allow(''),
+  avatarUrl: Joi.string().uri().optional().allow(""),
 });

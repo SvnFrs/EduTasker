@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { prisma } from '../../config/database.js';
-import { signToken, verifyToken } from '../../helper/jwt.js';
+import { prisma } from "../../config/database.js";
+import { signToken, verifyToken } from "../../helper/jwt.js";
 import type { LoginDTO, RegisterDTO } from "./auth.type.ts";
 
 export const register = async (dto: RegisterDTO) => {

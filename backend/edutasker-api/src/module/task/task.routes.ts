@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as TaskController from './task.controller.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as TaskController from "./task.controller.js";
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -9,8 +9,8 @@ import {
   projectTaskParamSchema,
   projectIdParamSchema,
   assignTaskSchema,
-  updateTaskStatusSchema
-} from './task.schema.js';
+  updateTaskStatusSchema,
+} from "./task.schema.js";
 
 const router = Router();
 
@@ -227,7 +227,12 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/:projectId/tasks", authGuard, validate({ params: projectIdParamSchema, body: createTaskSchema }), TaskController.createTask);
+router.post(
+  "/:projectId/tasks",
+  authGuard,
+  validate({ params: projectIdParamSchema, body: createTaskSchema }),
+  TaskController.createTask,
+);
 
 /**
  * @openapi
@@ -350,7 +355,12 @@ router.post("/:projectId/tasks", authGuard, validate({ params: projectIdParamSch
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:projectId/tasks", authGuard, validate({ params: projectIdParamSchema, query: taskListQuerySchema }), TaskController.listTasks);
+router.get(
+  "/:projectId/tasks",
+  authGuard,
+  validate({ params: projectIdParamSchema, query: taskListQuerySchema }),
+  TaskController.listTasks,
+);
 
 /**
  * @openapi
@@ -435,7 +445,12 @@ router.get("/:projectId/tasks", authGuard, validate({ params: projectIdParamSche
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:projectId/tasks/:taskId", authGuard, validate({ params: projectTaskParamSchema }), TaskController.getTaskById);
+router.get(
+  "/:projectId/tasks/:taskId",
+  authGuard,
+  validate({ params: projectTaskParamSchema }),
+  TaskController.getTaskById,
+);
 
 /**
  * @openapi
@@ -549,7 +564,12 @@ router.get("/:projectId/tasks/:taskId", authGuard, validate({ params: projectTas
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:projectId/tasks/:taskId", authGuard, validate({ params: projectTaskParamSchema, body: updateTaskSchema }), TaskController.updateTask);
+router.put(
+  "/:projectId/tasks/:taskId",
+  authGuard,
+  validate({ params: projectTaskParamSchema, body: updateTaskSchema }),
+  TaskController.updateTask,
+);
 
 /**
  * @openapi
@@ -625,7 +645,12 @@ router.put("/:projectId/tasks/:taskId", authGuard, validate({ params: projectTas
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:projectId/tasks/:taskId", authGuard, validate({ params: projectTaskParamSchema }), TaskController.deleteTask);
+router.delete(
+  "/:projectId/tasks/:taskId",
+  authGuard,
+  validate({ params: projectTaskParamSchema }),
+  TaskController.deleteTask,
+);
 
 /**
  * @openapi
@@ -730,7 +755,12 @@ router.delete("/:projectId/tasks/:taskId", authGuard, validate({ params: project
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:projectId/tasks/:taskId/assign", authGuard, validate({ params: projectTaskParamSchema, body: assignTaskSchema }), TaskController.assignTask);
+router.put(
+  "/:projectId/tasks/:taskId/assign",
+  authGuard,
+  validate({ params: projectTaskParamSchema, body: assignTaskSchema }),
+  TaskController.assignTask,
+);
 
 /**
  * @openapi
@@ -829,6 +859,11 @@ router.put("/:projectId/tasks/:taskId/assign", authGuard, validate({ params: pro
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:projectId/tasks/:taskId/status", authGuard, validate({ params: projectTaskParamSchema, body: updateTaskStatusSchema }), TaskController.updateTaskStatus);
+router.put(
+  "/:projectId/tasks/:taskId/status",
+  authGuard,
+  validate({ params: projectTaskParamSchema, body: updateTaskStatusSchema }),
+  TaskController.updateTaskStatus,
+);
 
 export default router;

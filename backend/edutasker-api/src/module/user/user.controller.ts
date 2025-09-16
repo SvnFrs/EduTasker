@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
-import * as UserService from './user.service.js';
-import type { ChangePasswordDTO, UpdateAvatarDTO, UpdateProfileDTO, UserListQuery, UpdateUserByIdDTO } from './user.type.js';
+import * as UserService from "./user.service.js";
+import type {
+  ChangePasswordDTO,
+  UpdateAvatarDTO,
+  UpdateProfileDTO,
+  UserListQuery,
+  UpdateUserByIdDTO,
+} from "./user.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const getProfileHandler = async (req: Request, res: Response) => {
@@ -60,7 +66,10 @@ const deleteUserByIdHandler = async (req: Request, res: Response) => {
 
 export const getProfile = serviceWrapper(getProfileHandler, "Profile retrieved successfully");
 export const updateProfile = serviceWrapper(updateProfileHandler, "Profile updated successfully");
-export const changePassword = serviceWrapper(changePasswordHandler, "Password changed successfully");
+export const changePassword = serviceWrapper(
+  changePasswordHandler,
+  "Password changed successfully",
+);
 export const updateAvatar = serviceWrapper(updateAvatarHandler, "Avatar updated successfully");
 export const listUsers = serviceWrapper(listUsersHandler, "Users retrieved successfully");
 export const getUserById = serviceWrapper(getUserByIdHandler, "User retrieved successfully");

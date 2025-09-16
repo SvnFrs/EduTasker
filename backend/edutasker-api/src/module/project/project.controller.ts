@@ -1,6 +1,11 @@
 import type { Request, Response } from "express";
-import * as ProjectService from './project.service.js';
-import type { CreateProjectDTO, UpdateProjectDTO, ProjectListQuery, AddMemberDTO } from './project.type.js';
+import * as ProjectService from "./project.service.js";
+import type {
+  CreateProjectDTO,
+  UpdateProjectDTO,
+  ProjectListQuery,
+  AddMemberDTO,
+} from "./project.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const createProjectHandler = async (req: Request, res: Response) => {
@@ -63,7 +68,10 @@ const removeMemberHandler = async (req: Request, res: Response) => {
 
 export const createProject = serviceWrapper(createProjectHandler, "Project created successfully");
 export const listProjects = serviceWrapper(listProjectsHandler, "Projects retrieved successfully");
-export const getProjectById = serviceWrapper(getProjectByIdHandler, "Project retrieved successfully");
+export const getProjectById = serviceWrapper(
+  getProjectByIdHandler,
+  "Project retrieved successfully",
+);
 export const updateProject = serviceWrapper(updateProjectHandler, "Project updated successfully");
 export const deleteProject = serviceWrapper(deleteProjectHandler, "Project deleted successfully");
 export const addMember = serviceWrapper(addMemberHandler, "Member added successfully");

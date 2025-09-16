@@ -1,15 +1,15 @@
 import { Router } from "express";
-import { authGuard } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
-import * as MentorController from './mentor.controller.js';
+import { authGuard } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
+import * as MentorController from "./mentor.controller.js";
 import {
   createMentorSchema,
   updateMentorSchema,
   updateMentorByIdSchema,
   mentorListQuerySchema,
   mentorIdParamSchema,
-  userIdParamSchema
-} from './mentor.schema.js';
+  userIdParamSchema,
+} from "./mentor.schema.js";
 
 const router = Router();
 
@@ -225,7 +225,12 @@ router.post("/", authGuard, validate({ body: createMentorSchema }), MentorContro
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/", authGuard, validate({ query: mentorListQuerySchema }), MentorController.getAllMentors);
+router.get(
+  "/",
+  authGuard,
+  validate({ query: mentorListQuerySchema }),
+  MentorController.getAllMentors,
+);
 
 /**
  * @openapi
@@ -352,7 +357,12 @@ router.get("/me", authGuard, MentorController.getMyMentorProfile);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/me", authGuard, validate({ body: updateMentorSchema }), MentorController.updateMyMentorProfile);
+router.put(
+  "/me",
+  authGuard,
+  validate({ body: updateMentorSchema }),
+  MentorController.updateMyMentorProfile,
+);
 
 /**
  * @openapi
@@ -391,7 +401,12 @@ router.put("/me", authGuard, validate({ body: updateMentorSchema }), MentorContr
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id", authGuard, validate({ params: mentorIdParamSchema }), MentorController.getMentorById);
+router.get(
+  "/:id",
+  authGuard,
+  validate({ params: mentorIdParamSchema }),
+  MentorController.getMentorById,
+);
 
 /**
  * @openapi
@@ -435,7 +450,12 @@ router.get("/:id", authGuard, validate({ params: mentorIdParamSchema }), MentorC
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id/projects", authGuard, validate({ params: mentorIdParamSchema }), MentorController.getMentorWithProjects);
+router.get(
+  "/:id/projects",
+  authGuard,
+  validate({ params: mentorIdParamSchema }),
+  MentorController.getMentorWithProjects,
+);
 
 /**
  * @openapi
@@ -480,7 +500,12 @@ router.get("/:id/projects", authGuard, validate({ params: mentorIdParamSchema })
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id/verify", authGuard, validate({ params: mentorIdParamSchema }), MentorController.verifyMentor);
+router.put(
+  "/:id/verify",
+  authGuard,
+  validate({ params: mentorIdParamSchema }),
+  MentorController.verifyMentor,
+);
 
 /**
  * @openapi
@@ -525,7 +550,12 @@ router.put("/:id/verify", authGuard, validate({ params: mentorIdParamSchema }), 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id/unverify", authGuard, validate({ params: mentorIdParamSchema }), MentorController.unverifyMentor);
+router.put(
+  "/:id/unverify",
+  authGuard,
+  validate({ params: mentorIdParamSchema }),
+  MentorController.unverifyMentor,
+);
 
 /**
  * @openapi
@@ -564,7 +594,12 @@ router.put("/:id/unverify", authGuard, validate({ params: mentorIdParamSchema })
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/user/:userId", authGuard, validate({ params: userIdParamSchema }), MentorController.getMentorByUserId);
+router.get(
+  "/user/:userId",
+  authGuard,
+  validate({ params: userIdParamSchema }),
+  MentorController.getMentorByUserId,
+);
 
 /**
  * @openapi
@@ -637,7 +672,12 @@ router.get("/user/:userId", authGuard, validate({ params: userIdParamSchema }), 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authGuard, validate({ params: mentorIdParamSchema, body: updateMentorByIdSchema }), MentorController.updateMentorById);
+router.put(
+  "/:id",
+  authGuard,
+  validate({ params: mentorIdParamSchema, body: updateMentorByIdSchema }),
+  MentorController.updateMentorById,
+);
 
 /**
  * @openapi
@@ -682,6 +722,11 @@ router.put("/:id", authGuard, validate({ params: mentorIdParamSchema, body: upda
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", authGuard, validate({ params: mentorIdParamSchema }), MentorController.deleteMentorById);
+router.delete(
+  "/:id",
+  authGuard,
+  validate({ params: mentorIdParamSchema }),
+  MentorController.deleteMentorById,
+);
 
 export default router;

@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
-import * as TaskService from './task.service.js';
-import type { CreateTaskDTO, UpdateTaskDTO, TaskListQuery, AssignTaskDTO, UpdateTaskStatusDTO } from './task.type.js';
+import * as TaskService from "./task.service.js";
+import type {
+  CreateTaskDTO,
+  UpdateTaskDTO,
+  TaskListQuery,
+  AssignTaskDTO,
+  UpdateTaskStatusDTO,
+} from "./task.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const createTaskHandler = async (req: Request, res: Response) => {
@@ -100,4 +106,7 @@ export const getTaskById = serviceWrapper(getTaskByIdHandler, "Task retrieved su
 export const updateTask = serviceWrapper(updateTaskHandler, "Task updated successfully");
 export const deleteTask = serviceWrapper(deleteTaskHandler, "Task deleted successfully");
 export const assignTask = serviceWrapper(assignTaskHandler, "Task assigned successfully");
-export const updateTaskStatus = serviceWrapper(updateTaskStatusHandler, "Task status updated successfully");
+export const updateTaskStatus = serviceWrapper(
+  updateTaskStatusHandler,
+  "Task status updated successfully",
+);

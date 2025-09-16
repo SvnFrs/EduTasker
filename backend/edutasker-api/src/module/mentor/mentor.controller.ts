@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import * as MentorService from './mentor.service.js';
+import * as MentorService from "./mentor.service.js";
 import type {
   CreateMentorDTO,
   UpdateMentorDTO,
   UpdateMentorByIdDTO,
-  MentorListQuery
-} from './mentor.type.js';
+  MentorListQuery,
+} from "./mentor.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
 const createMentorHandler = async (req: Request, res: Response) => {
@@ -94,13 +94,37 @@ const getVerifiedMentorsHandler = async (req: Request, res: Response) => {
 
 export const createMentor = serviceWrapper(createMentorHandler, "Mentor created successfully");
 export const getMentorById = serviceWrapper(getMentorByIdHandler, "Mentor retrieved successfully");
-export const getMentorByUserId = serviceWrapper(getMentorByUserIdHandler, "Mentor retrieved successfully");
-export const getMentorWithProjects = serviceWrapper(getMentorWithProjectsHandler, "Mentor with projects retrieved successfully");
+export const getMentorByUserId = serviceWrapper(
+  getMentorByUserIdHandler,
+  "Mentor retrieved successfully",
+);
+export const getMentorWithProjects = serviceWrapper(
+  getMentorWithProjectsHandler,
+  "Mentor with projects retrieved successfully",
+);
 export const getAllMentors = serviceWrapper(getAllMentorsHandler, "Mentors retrieved successfully");
-export const getMyMentorProfile = serviceWrapper(getMyMentorProfileHandler, "Mentor profile retrieved successfully");
-export const updateMyMentorProfile = serviceWrapper(updateMyMentorProfileHandler, "Mentor profile updated successfully");
-export const updateMentorById = serviceWrapper(updateMentorByIdHandler, "Mentor updated successfully");
-export const deleteMentorById = serviceWrapper(deleteMentorByIdHandler, "Mentor deleted successfully");
+export const getMyMentorProfile = serviceWrapper(
+  getMyMentorProfileHandler,
+  "Mentor profile retrieved successfully",
+);
+export const updateMyMentorProfile = serviceWrapper(
+  updateMyMentorProfileHandler,
+  "Mentor profile updated successfully",
+);
+export const updateMentorById = serviceWrapper(
+  updateMentorByIdHandler,
+  "Mentor updated successfully",
+);
+export const deleteMentorById = serviceWrapper(
+  deleteMentorByIdHandler,
+  "Mentor deleted successfully",
+);
 export const verifyMentor = serviceWrapper(verifyMentorHandler, "Mentor verified successfully");
-export const unverifyMentor = serviceWrapper(unverifyMentorHandler, "Mentor unverified successfully");
-export const getVerifiedMentors = serviceWrapper(getVerifiedMentorsHandler, "Verified mentors retrieved successfully");
+export const unverifyMentor = serviceWrapper(
+  unverifyMentorHandler,
+  "Mentor unverified successfully",
+);
+export const getVerifiedMentors = serviceWrapper(
+  getVerifiedMentorsHandler,
+  "Verified mentors retrieved successfully",
+);
