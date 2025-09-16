@@ -77,8 +77,20 @@ model User {
   files           File[]
   notifications   Notification[]
   Mentor          Mentor?
+  Student         Student?
 
   @@map("user")
+}
+
+model Student {
+  id          String @id @default(uuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String @map("name")
+  schoolEmail String @map("school_email")
+  studentCode String @unique
+  majorCode   String @map("major_code")
+  joinYear    Int    @map("join_year")
 }
 
 model Mentor {
