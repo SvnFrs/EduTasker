@@ -4,16 +4,30 @@ import { signToken, verifyToken } from "../../helper/jwt.js";
 import type { LoginDTO, RegisterDTO } from "./auth.type.ts";
 
 export const register = async (dto: RegisterDTO) => {
+  if (dto.password !== dto.rePassword) throw new Error("Passwords do not match");
   const hashed = await bcrypt.hash(dto.password, 10);
   const user = await prisma.user.create({
-    data: { ...dto, passwordHash: hashed },
+    data: {
+      email: dto.email,
+      name: dto.name,
+      passwordHash: hashed,
+      roles: {
+        create: {
+          role: {
+            connect: {
+              name_code: { name: 'Student', code: 'STUDENT' }
+            }
+          }
+        }
+      }
+    },
   });
   return { user, token: signToken({ id: user.id, email: user.email }) };
 };
 
 export const login = async (dto: LoginDTO) => {
   const user = await prisma.user.findUnique({ where: { email: dto.email } });
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error("Account not found");
 
   const valid = await bcrypt.compare(dto.password, user.passwordHash);
   if (!valid) throw new Error("Invalid credentials");

@@ -94,11 +94,12 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
- *               - username
- *               - password
  *               - email
+ *               - password
+ *               - name
+ *               - rePassword
  *             properties:
- *               username:
+ *               name:
  *                 type: string
  *                 description: Unique username
  *                 example: "johndoe"
@@ -106,10 +107,14 @@ const router = Router();
  *                 type: string
  *                 description: User password
  *                 example: "securePassword123"
+ *               rePassword:
+ *                 type: string
+ *                 description: Password confirmation (must match password)
+ *                 example: "securePassword123"
  *               email:
  *                 type: string
  *                 format: email
- *                 description: User email address
+ *                 description:  User email address
  *                 example: "john@example.com"
  *     responses:
  *       200:
@@ -168,13 +173,13 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - email
  *               - password
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *                 description: Username or email
- *                 example: "johndoe"
+ *                 example: "username@example.com"
  *               password:
  *                 type: string
  *                 description: User password
@@ -191,7 +196,7 @@ router.post(
  *               content:
  *                 user:
  *                   id: "123e4567-e89b-12d3-a456-426614174000"
- *                   username: "johndoe"
+ *                   name: "johndoe"
  *                   email: "john@example.com"
  *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                 refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."

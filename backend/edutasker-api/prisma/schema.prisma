@@ -36,9 +36,11 @@ enum ProjectAction {
 
 model Role {
   id    String     @id @default(uuid()) @map("id")
-  name  String     @unique @map("name")
+  name  String     @map("name")
+  code  String     @map("code")
   users UserRole[]
 
+  @@unique([name, code])
   @@map("roles")
 }
 
