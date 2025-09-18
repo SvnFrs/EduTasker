@@ -3,7 +3,6 @@ import { authGuard } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import * as RoleController from "./role.controller.js";
 import {
-  assignPermissionsSchema,
   createRoleSchema,
   roleIdParamSchema,
   roleListQuerySchema,
@@ -16,22 +15,6 @@ const router = Router();
  * @openapi
  * components:
  *   schemas:
- *     Permission:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *           description: Permission unique identifier
- *         name:
- *           type: string
- *           description: Permission name
- *         description:
- *           type: string
- *           description: Permission description
- *         module:
- *           type: string
- *           description: Module this permission belongs to
  *     Role:
  *       type: object
  *       properties:
@@ -42,21 +25,15 @@ const router = Router();
  *         name:
  *           type: string
  *           description: Role name
- *         description:
+ *         code:
  *           type: string
- *           description: Role description
- *         permissions:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Permission'
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Creation timestamp
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Last update timestamp
+ *           description: Role code
+ *         _count:
+ *           type: object
+ *           properties:
+ *             users:
+ *               type: number
+ *               description: Number of users with this role
  *     RoleResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/ServiceWrapperResponse'
@@ -88,15 +65,6 @@ const router = Router();
  *                   type: number
  *                 totalElements:
  *                   type: number
- *     PermissionListResponse:
- *       allOf:
- *         - $ref: '#/components/schemas/ServiceWrapperResponse'
- *         - type: object
- *           properties:
- *             content:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Permission'
  */
 
 /**
@@ -124,11 +92,12 @@ const router = Router();
  *                 maxLength: 100
  *                 description: Role name
  *                 example: "Project Manager"
- *               description:
+ *               code:
  *                 type: string
- *                 maxLength: 500
- *                 description: Role description
- *                 example: "Manages projects and tasks within the organization"
+ *                 minLength: 1
+ *                 maxLength: 50
+ *                 description: Role code
+ *                 example: "PROJECT_MANAGER"
  *     responses:
  *       200:
  *         description: Role created successfully
@@ -141,10 +110,9 @@ const router = Router();
  *               content:
  *                 id: "123e4567-e89b-12d3-a456-426614174000"
  *                 name: "Project Manager"
- *                 description: "Manages projects and tasks within the organization"
- *                 permissions: []
- *                 createdAt: "2023-01-01T00:00:00Z"
- *                 updatedAt: "2023-01-01T00:00:00Z"
+ *                 code: "PROJECT_MANAGER"
+ *                 _count:
+ *                   users: 5
  *               messages: ["Role created successfully"]
  *               code: "200"
  *               success: true
@@ -215,14 +183,9 @@ router.post("/", authGuard, validate({ body: createRoleSchema }), RoleController
  *               content:
  *                 - id: "123e4567-e89b-12d3-a456-426614174000"
  *                   name: "Project Manager"
- *                   description: "Manages projects and tasks within the organization"
- *                   permissions:
- *                     - id: "456e7890-e89b-12d3-a456-426614174001"
- *                       name: "project:create"
- *                       description: "Create new projects"
- *                       module: "projects"
- *                   createdAt: "2023-01-01T00:00:00Z"
- *                   updatedAt: "2023-01-01T00:00:00Z"
+ *                   code: "PROJECT_MANAGER"
+ *                   _count:
+ *                     users: 5
  *               messages: ["Roles retrieved successfully"]
  *               code: "200"
  *               success: true
@@ -278,18 +241,9 @@ router.get("/", authGuard, validate({ query: roleListQuerySchema }), RoleControl
  *               content:
  *                 id: "123e4567-e89b-12d3-a456-426614174000"
  *                 name: "Project Manager"
- *                 description: "Manages projects and tasks within the organization"
- *                 permissions:
- *                   - id: "456e7890-e89b-12d3-a456-426614174001"
- *                     name: "project:create"
- *                     description: "Create new projects"
- *                     module: "projects"
- *                   - id: "789e0123-e89b-12d3-a456-426614174002"
- *                     name: "task:manage"
- *                     description: "Manage tasks"
- *                     module: "tasks"
- *                 createdAt: "2023-01-01T00:00:00Z"
- *                 updatedAt: "2023-01-01T00:00:00Z"
+ *                 code: "PROJECT_MANAGER"
+ *                 _count:
+ *                   users: 5
  *               messages: ["Role retrieved successfully"]
  *               code: "200"
  *               success: true
@@ -352,11 +306,12 @@ router.get("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleContr
  *                 maxLength: 100
  *                 description: Role name
  *                 example: "Senior Project Manager"
- *               description:
+ *               code:
  *                 type: string
- *                 maxLength: 500
- *                 description: Role description
- *                 example: "Senior level project manager with extended permissions"
+ *                 minLength: 1
+ *                 maxLength: 50
+ *                 description: Role code
+ *                 example: "SENIOR_PROJECT_MANAGER"
  *     responses:
  *       200:
  *         description: Role updated successfully
@@ -369,14 +324,9 @@ router.get("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleContr
  *               content:
  *                 id: "123e4567-e89b-12d3-a456-426614174000"
  *                 name: "Senior Project Manager"
- *                 description: "Senior level project manager with extended permissions"
- *                 permissions:
- *                   - id: "456e7890-e89b-12d3-a456-426614174001"
- *                     name: "project:create"
- *                     description: "Create new projects"
- *                     module: "projects"
- *                 createdAt: "2023-01-01T00:00:00Z"
- *                 updatedAt: "2023-01-02T00:00:00Z"
+ *                 code: "SENIOR_PROJECT_MANAGER"
+ *                 _count:
+ *                   users: 3
  *               messages: ["Role updated successfully"]
  *               code: "200"
  *               success: true
@@ -484,149 +434,5 @@ router.delete(
   validate({ params: roleIdParamSchema }),
   RoleController.deleteRole,
 );
-
-/**
- * @openapi
- * /roles/{id}/permissions:
- *   post:
- *     tags:
- *       - Roles
- *     summary: Assign permissions to role
- *     description: Assigns or updates permissions for a specific role (admin only)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: Role ID
- *         example: "123e4567-e89b-12d3-a456-426614174000"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - permissionIds
- *             properties:
- *               permissionIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: uuid
- *                 description: Array of permission IDs to assign to this role
- *                 example: ["456e7890-e89b-12d3-a456-426614174001", "789e0123-e89b-12d3-a456-426614174002"]
- *     responses:
- *       200:
- *         description: Permissions assigned successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RoleResponse'
- *             example:
- *               message: "Permissions assigned successfully"
- *               content:
- *                 id: "123e4567-e89b-12d3-a456-426614174000"
- *                 name: "Project Manager"
- *                 description: "Manages projects and tasks within the organization"
- *                 permissions:
- *                   - id: "456e7890-e89b-12d3-a456-426614174001"
- *                     name: "project:create"
- *                     description: "Create new projects"
- *                     module: "projects"
- *                   - id: "789e0123-e89b-12d3-a456-426614174002"
- *                     name: "task:manage"
- *                     description: "Manage tasks"
- *                     module: "tasks"
- *                 createdAt: "2023-01-01T00:00:00Z"
- *                 updatedAt: "2023-01-02T00:00:00Z"
- *               messages: ["Permissions assigned successfully"]
- *               code: "200"
- *               success: true
- *       400:
- *         description: Bad request - Role ID is required or validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       403:
- *         description: Forbidden - Admin access required
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Role or permissions not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.post(
-  "/:id/permissions",
-  authGuard,
-  validate({ params: roleIdParamSchema, body: assignPermissionsSchema }),
-  RoleController.assignPermissions,
-);
-
-/**
- * @openapi
- * /permissions:
- *   get:
- *     tags:
- *       - Permissions
- *     summary: List all permissions
- *     description: Retrieves all available permissions in the system (admin only)
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Permissions retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PermissionListResponse'
- *             example:
- *               message: "Permissions retrieved successfully"
- *               content:
- *                 - id: "456e7890-e89b-12d3-a456-426614174001"
- *                   name: "project:create"
- *                   description: "Create new projects"
- *                   module: "projects"
- *                 - id: "789e0123-e89b-12d3-a456-426614174002"
- *                   name: "task:manage"
- *                   description: "Manage tasks"
- *                   module: "tasks"
- *                 - id: "abc12345-e89b-12d3-a456-426614174003"
- *                   name: "user:admin"
- *                   description: "Administer users"
- *                   module: "users"
- *               messages: ["Permissions retrieved successfully"]
- *               code: "200"
- *               success: true
- *       401:
- *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       403:
- *         description: Forbidden - Admin access required
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.get("/permissions", authGuard, RoleController.listPermissions);
 
 export default router;

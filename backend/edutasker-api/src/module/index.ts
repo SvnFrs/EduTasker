@@ -4,4 +4,5 @@ import projectRoute from "./project/project.routes.js";
 import taskRoute from "./task/task.routes.js";
 import commentRoute from "./comment/comment.routes.js";
 import roleRoute from "./role/role.routes.js";
-export { authRoute, userRoute, projectRoute, taskRoute, commentRoute, roleRoute };
+import importRoute from "./import/import.routes.js";
+export { authRoute, userRoute, projectRoute, taskRoute, commentRoute, roleRoute, importRoute };
