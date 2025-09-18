@@ -1,13 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
-import { ProjectRole, type ProjectAction } from "../module/project/project.type.js";
+import { type ProjectAction, ProjectRole } from "../module/project/project.type.js";
 
 const prisma = new PrismaClient();
 
 export function projectGuard(action: ProjectAction, resource: string) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = req.user;
+      const user = (req as any).user;
       if (!user) {
         return res.status(401).json({ error: "Unauthorized" });
       }

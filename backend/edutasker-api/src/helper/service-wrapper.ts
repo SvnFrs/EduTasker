@@ -10,6 +10,10 @@ export const serviceWrapper = <T>(
     try {
       const result = await serviceFunction(req, res);
 
+      if (Buffer.isBuffer(result)) {
+        return res.send(result);
+      }
+
       if (isPaginationWrapper(result)) {
         const response = unwrapPaginationWrapper(result as IPaginationWrapper<any[]>, {
           code: "200",
