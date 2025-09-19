@@ -11,6 +11,11 @@ interface EnvSchema {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
+  S3_BUCKET_NAME: string;
+  S3_ACCESS_KEY_ID: string;
+  S3_SECRET_ACCESS_KEY: string;
+  S3_REGION: string;
+  S3_ENDPOINT: string;
 }
 
 const validators = {
@@ -23,6 +28,11 @@ const validators = {
   REDIS_HOST: Joi.string().default("localhost"),
   REDIS_PORT: Joi.number().default(6379),
   REDIS_PASSWORD: Joi.string().default(""),
+  S3_BUCKET_NAME: Joi.string().required(),
+  S3_ACCESS_KEY_ID: Joi.string().required(),
+  S3_SECRET_ACCESS_KEY: Joi.string().required(),
+  S3_REGION: Joi.string().required(),
+  S3_ENDPOINT: Joi.string().required(),
 };
 const configLoader = new ConfigLoader<EnvSchema>(validators, (env) => ({
   ...env,
