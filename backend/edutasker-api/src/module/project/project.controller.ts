@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import * as ProjectService from "./project.service.js";
 import type {
-  CreateProjectDTO,
-  UpdateProjectDTO,
-  ProjectListQuery,
   AddMemberDTO,
+  CreateProjectDTO,
+  ProjectListQuery,
+  UpdateProjectDTO,
 } from "./project.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
@@ -15,7 +15,15 @@ const createProjectHandler = async (req: Request, res: Response) => {
 };
 
 const listProjectsHandler = async (req: Request, res: Response) => {
-  const query: ProjectListQuery = req.query;
+  const query: ProjectListQuery = {
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+    search: req.query.search as string,
+    status: req.query.status as string,
+    createdBy: req.query.createdBy as string,
+    userId: req.query.userId as string,
+    deadline: req.query.deadline as "upcoming" | "overdue" | "this-week" | "this-month",
+  };
   return await ProjectService.getAllProjects(query);
 };
 

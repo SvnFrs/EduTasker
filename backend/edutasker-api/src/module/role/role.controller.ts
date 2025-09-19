@@ -9,7 +9,11 @@ const createRoleHandler = async (req: Request, res: Response) => {
 };
 
 const listRolesHandler = async (req: Request, res: Response) => {
-  const query: RoleListQuery = req.query;
+  const query: RoleListQuery = {
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+    search: req.query.search as string,
+  };
   return await RoleService.getAllRoles(query);
 };
 

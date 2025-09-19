@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../../middleware/validate.middleware.js";
 import * as AuthController from "./auth.controller.js";
-import { loginSchema, registerSchema } from "./auth.schema.js";
+import { loginSchema, registerSchema, refreshTokenSchema, logoutSchema } from "./auth.schema.js";
 
 const router = Router();
 
@@ -53,19 +53,37 @@ const router = Router();
  *             content:
  *               type: object
  *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: JWT refresh token
+ *                 roles:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: User roles
+ *     RegisterResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ServiceWrapperResponse'
+ *         - type: object
+ *           properties:
+ *             content:
+ *               type: object
+ *               properties:
  *                 user:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: string
- *                     username:
+ *                     name:
  *                       type: string
  *                     email:
  *                       type: string
  *                 token:
  *                   type: string
- *                 refreshToken:
- *                   type: string
+ *                   description: JWT access token
  *     ErrorResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/ServiceWrapperResponse'
@@ -122,7 +140,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               $ref: '#/components/schemas/RegisterResponse'
  *             example:
  *               message: "User registered successfully"
  *               content:
@@ -131,7 +149,6 @@ const router = Router();
  *                   username: "johndoe"
  *                   email: "john@example.com"
  *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *                 refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *               messages: ["User registered successfully"]
  *               code: "200"
  *               success: true
@@ -194,12 +211,9 @@ router.post(
  *             example:
  *               message: "User logged in successfully"
  *               content:
- *                 user:
- *                   id: "123e4567-e89b-12d3-a456-426614174000"
- *                   name: "johndoe"
- *                   email: "john@example.com"
- *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                 refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 roles: ["Student", "Mentor"]
  *               messages: ["User logged in successfully"]
  *               code: "200"
  *               success: true
@@ -265,8 +279,9 @@ router.post(
  *             example:
  *               message: "Token refreshed successfully"
  *               content:
- *                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *                 refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 roles: ["Student", "Mentor"]
  *               messages: ["Token refreshed successfully"]
  *               code: "200"
  *               success: true
@@ -277,7 +292,13 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/refresh", AuthController.refreshToken);
+router.post(
+  "/refresh",
+  validate({
+    body: refreshTokenSchema,
+  }),
+  AuthController.refreshToken,
+);
 
 /**
  * @openapi
@@ -327,6 +348,12 @@ router.post("/refresh", AuthController.refreshToken);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/logout", AuthController.logout);
+router.post(
+  "/logout",
+  validate({
+    body: logoutSchema,
+  }),
+  AuthController.logout,
+);
 
 export default router;

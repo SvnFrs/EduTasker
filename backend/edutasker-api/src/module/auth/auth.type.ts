@@ -16,3 +16,9 @@ export interface TokenPayload extends JwtPayload {
   id: string;
   email: string;
 }
+
+export interface AuthenticationResponse {
+  accessToken: string;
+  refreshToken: string;
+  roles: string[];
+}

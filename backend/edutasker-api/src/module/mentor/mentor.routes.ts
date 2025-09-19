@@ -1,13 +1,12 @@
 import { Router } from "express";
-import { authGuard } from "../../middleware/auth.middleware.js";
-import { validate } from "../../middleware/validate.middleware.js";
+import { authGuard, validate } from "../../middleware/index.js";
 import * as MentorController from "./mentor.controller.js";
 import {
   createMentorSchema,
-  updateMentorSchema,
-  updateMentorByIdSchema,
-  mentorListQuerySchema,
   mentorIdParamSchema,
+  mentorListQuerySchema,
+  updateMentorByIdSchema,
+  updateMentorSchema,
   userIdParamSchema,
 } from "./mentor.schema.js";
 
@@ -110,7 +109,7 @@ const router = Router();
 
 /**
  * @openapi
- * /api/mentors:
+ * /mentors:
  *   post:
  *     tags:
  *       - Mentors
@@ -172,7 +171,7 @@ router.post("/", authGuard, validate({ body: createMentorSchema }), MentorContro
 
 /**
  * @openapi
- * /api/mentors:
+ * /mentors:
  *   get:
  *     tags:
  *       - Mentors
@@ -234,7 +233,7 @@ router.get(
 
 /**
  * @openapi
- * /api/mentors/verified:
+ * /mentors/verified:
  *   get:
  *     tags:
  *       - Mentors
@@ -275,7 +274,7 @@ router.get("/verified", authGuard, MentorController.getVerifiedMentors);
 
 /**
  * @openapi
- * /api/mentors/me:
+ * /mentors/me:
  *   get:
  *     tags:
  *       - Mentors
@@ -306,7 +305,7 @@ router.get("/me", authGuard, MentorController.getMyMentorProfile);
 
 /**
  * @openapi
- * /api/mentors/me:
+ * /mentors/me:
  *   put:
  *     tags:
  *       - Mentors
@@ -366,7 +365,7 @@ router.put(
 
 /**
  * @openapi
- * /api/mentors/{id}:
+ * /mentors/{id}:
  *   get:
  *     tags:
  *       - Mentors
@@ -410,7 +409,7 @@ router.get(
 
 /**
  * @openapi
- * /api/mentors/{id}/projects:
+ * /mentors/{id}/projects:
  *   get:
  *     tags:
  *       - Mentors
@@ -459,7 +458,7 @@ router.get(
 
 /**
  * @openapi
- * /api/mentors/{id}/verify:
+ * /mentors/{id}/verify:
  *   put:
  *     tags:
  *       - Mentors
@@ -509,7 +508,7 @@ router.put(
 
 /**
  * @openapi
- * /api/mentors/{id}/unverify:
+ * /mentors/{id}/unverify:
  *   put:
  *     tags:
  *       - Mentors
@@ -559,7 +558,7 @@ router.put(
 
 /**
  * @openapi
- * /api/mentors/user/{userId}:
+ * /mentors/user/{userId}:
  *   get:
  *     tags:
  *       - Mentors
@@ -603,7 +602,7 @@ router.get(
 
 /**
  * @openapi
- * /api/mentors/{id}:
+ * /mentors/{id}:
  *   put:
  *     tags:
  *       - Mentors
@@ -681,7 +680,7 @@ router.put(
 
 /**
  * @openapi
- * /api/mentors/{id}:
+ * /mentors/{id}:
  *   delete:
  *     tags:
  *       - Mentors

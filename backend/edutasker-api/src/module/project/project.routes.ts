@@ -200,7 +200,7 @@ router.post(
  *         description: Page number for pagination
  *         example: 1
  *       - in: query
- *         name: size
+ *         name: limit
  *         schema:
  *           type: integer
  *           minimum: 1

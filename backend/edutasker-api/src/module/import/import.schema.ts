@@ -7,12 +7,6 @@ export const studentImportRowSchema = Joi.object({
   defaultPassword: Joi.string().min(6).optional(),
 });
 
-export const studentImportSchema = Joi.object({
-  students: Joi.array().items(studentImportRowSchema).min(1).max(1000).required(),
-  generateDefaultPassword: Joi.boolean().default(true),
-  sendWelcomeEmail: Joi.boolean().default(false),
-});
-
 export const studentTemplateQuerySchema = Joi.object({
   format: Joi.string().valid("xlsx").default("xlsx"),
   includeExample: Joi.boolean().default(true),
@@ -36,21 +30,6 @@ export const importJobQuerySchema = Joi.object({
 
 export const importJobIdParamSchema = Joi.object({
   id: Joi.string().uuid().required(),
-});
-
-export const fileUploadValidationSchema = Joi.object({
-  fieldname: Joi.string().valid("file").required(),
-  originalname: Joi.string().required(),
-  encoding: Joi.string().required(),
-  mimetype: Joi.string()
-    .valid(
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.ms-excel",
-    )
-    .required(),
-  size: Joi.number()
-    .max(5 * 1024 * 1024)
-    .required(), // 5MB limit
 });
 
 export const previewImportSchema = Joi.object({
