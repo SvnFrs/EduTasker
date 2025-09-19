@@ -23,7 +23,6 @@ const projectRouter = Router();
 projectRouter.use("/", projectRoute);
 projectRouter.use("/", taskRoute);
 projectRouter.use("/", commentRoute);
-projectRouter.use("/", boardRoute);
 
 app.use("/auth", authRoute);
 app.use("/users", userRoute);

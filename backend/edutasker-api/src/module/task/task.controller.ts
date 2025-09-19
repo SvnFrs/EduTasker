@@ -6,6 +6,7 @@ import type {
   TaskListQuery,
   AssignTaskDTO,
   UpdateTaskStatusDTO,
+  MoveTaskDTO,
 } from "./task.type.js";
 import { serviceWrapper } from "../../helper/service-wrapper.js";
 
@@ -100,6 +101,20 @@ const updateTaskStatusHandler = async (req: Request, res: Response) => {
   return await TaskService.updateTaskStatus(projectId, taskId, data, userId);
 };
 
+const moveTaskHandler = async (req: Request, res: Response) => {
+  const { projectId, taskId } = req.params;
+  if (!projectId) {
+    throw new Error("Project ID is required");
+  }
+  if (!taskId) {
+    throw new Error("Task ID is required");
+  }
+
+  const userId = (req as any).user.id;
+  const data: MoveTaskDTO = req.body;
+  return await TaskService.moveTask(projectId, taskId, data, userId);
+};
+
 export const createTask = serviceWrapper(createTaskHandler, "Task created successfully");
 export const listTasks = serviceWrapper(listTasksHandler, "Tasks retrieved successfully");
 export const getTaskById = serviceWrapper(getTaskByIdHandler, "Task retrieved successfully");
@@ -110,3 +125,4 @@ export const updateTaskStatus = serviceWrapper(
   updateTaskStatusHandler,
   "Task status updated successfully",
 );
+export const moveTask = serviceWrapper(moveTaskHandler, "Task moved successfully");

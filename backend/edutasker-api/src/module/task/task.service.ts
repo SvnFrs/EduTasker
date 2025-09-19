@@ -449,33 +449,7 @@ export const updateTask = async (
   data: UpdateTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -535,33 +509,7 @@ export const deleteTask = async (
   taskId: string,
   userId: string,
 ): Promise<void> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   await prisma.task.delete({
     where: { id: taskId },
@@ -574,33 +522,7 @@ export const assignUsersToTask = async (
   data: AssignTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const projectMembers = await prisma.projectMember.findMany({
     where: {
@@ -633,33 +555,7 @@ export const updateTaskStatus = async (
   data: UpdateTaskStatusDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -714,33 +610,7 @@ export const moveTask = async (
   data: MoveTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const board = await prisma.board.findUnique({
     where: { id: data.boardId },
@@ -813,4 +683,38 @@ export const moveTask = async (
   });
 
   return mapToTaskResponse(updatedTask);
+};
+
+const validateProjectAndTaskOwnedByUserId = async (
+  projectId: string,
+  taskId: string,
+  userId: string,
+): Promise<void> => {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      members: {
+        where: { userId },
+      },
+    },
+  });
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (project.members.length === 0) {
+    throw new Error("You are not a member of this project");
+  }
+
+  const task = await prisma.task.findUnique({
+    where: {
+      id: taskId,
+      projectId,
+    },
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
 };
