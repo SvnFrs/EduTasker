@@ -1,4 +1,9 @@
 import { prisma } from "../../config/database.js";
+import {
+  adjustOrderForNewItem,
+  getNextOrderNumber,
+  reorderSingleItem,
+} from "../../helper/reorder.util.js";
 import type {
   AssignTaskDTO,
   CreateTaskDTO,
@@ -81,11 +86,9 @@ export const createTask = async (
 
   let taskOrder = data.order;
   if (taskOrder === undefined) {
-    const lastTask = await prisma.task.findFirst({
-      where: { boardId: data.boardId },
-      orderBy: { order: "desc" },
-    });
-    taskOrder = (lastTask?.order || 0) + 1;
+    taskOrder = await getNextOrderNumber(projectId, "task", { boardId: data.boardId });
+  } else {
+    await adjustOrderForNewItem(taskOrder, projectId, "task", { boardId: data.boardId });
   }
 
   if (data.assigneeIds && data.assigneeIds.length > 0) {
@@ -745,6 +748,21 @@ export const moveTask = async (
 
   if (!board || board.projectId !== projectId) {
     throw new Error("Board not found or doesn't belong to this project");
+  }
+
+  const currentTask = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { boardId: true, order: true },
+  });
+
+  if (currentTask && (currentTask.boardId !== data.boardId || currentTask.order !== data.order)) {
+    await reorderSingleItem({
+      itemId: taskId,
+      newOrder: data.order,
+      projectId,
+      tableName: "task",
+      additionalWhereClause: { boardId: data.boardId },
+    });
   }
 
   const updatedTask = await prisma.task.update({

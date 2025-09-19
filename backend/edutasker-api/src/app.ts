@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import express, { Router } from "express";
 import {
   authRoute,
+  boardRoute,
   commentRoute,
   importRoute,
   mentorRoute,
@@ -22,6 +23,7 @@ const projectRouter = Router();
 projectRouter.use("/", projectRoute);
 projectRouter.use("/", taskRoute);
 projectRouter.use("/", commentRoute);
+projectRouter.use("/", boardRoute);
 
 app.use("/auth", authRoute);
 app.use("/users", userRoute);
@@ -31,4 +33,5 @@ app.use("/roles", roleRoute);
 app.use("/comments", commentRoute);
 app.use("/tasks", taskRoute);
 app.use("/mentors", mentorRoute);
+app.use("/boards", boardRoute);
 export default app;
