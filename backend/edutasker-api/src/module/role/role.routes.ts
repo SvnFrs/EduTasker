@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../../middleware/auth.middleware.js";
-import { validate } from "../../middleware/validate.middleware.js";
+import { authGuard, validate } from "../../middleware/index.js";
 import * as RoleController from "./role.controller.js";
 import {
   createRoleSchema,
@@ -14,6 +13,11 @@ const router = Router();
 /**
  * @openapi
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     Role:
  *       type: object
@@ -208,7 +212,7 @@ router.post("/", authGuard, validate({ body: createRoleSchema }), RoleController
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/", authGuard, validate({ query: roleListQuerySchema }), RoleController.listRoles);
+router.get("/", validate({ query: roleListQuerySchema }), RoleController.listRoles);
 
 /**
  * @openapi
@@ -272,7 +276,7 @@ router.get("/", authGuard, validate({ query: roleListQuerySchema }), RoleControl
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id", authGuard, validate({ params: roleIdParamSchema }), RoleController.getRoleById);
+router.get("/:id", validate({ params: roleIdParamSchema }), RoleController.getRoleById);
 
 /**
  * @openapi

@@ -3,12 +3,12 @@ import { authGuard } from "../../middleware/auth.middleware.js";
 import { validate } from "../../middleware/validate.middleware.js";
 import * as ProjectController from "./project.controller.js";
 import {
-  createProjectSchema,
-  updateProjectSchema,
-  projectListQuerySchema,
-  projectIdParamSchema,
   addMemberSchema,
+  createProjectSchema,
+  projectIdParamSchema,
+  projectListQuerySchema,
   removeMemberParamSchema,
+  updateProjectSchema,
 } from "./project.schema.js";
 
 const router = Router();
@@ -16,6 +16,11 @@ const router = Router();
 /**
  * @openapi
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     Project:
  *       type: object
@@ -38,24 +43,6 @@ const router = Router();
  *           type: string
  *           format: date-time
  *           description: Project deadline
- *         ownerId:
- *           type: string
- *           format: uuid
- *           description: Project owner user ID
- *         members:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 format: uuid
- *               username:
- *                 type: string
- *               name:
- *                 type: string
- *               email:
- *                 type: string
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -64,6 +51,104 @@ const router = Router();
  *           type: string
  *           format: date-time
  *           description: Last update timestamp
+ *         createdBy:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             name:
+ *               type: string
+ *             email:
+ *               type: string
+ *           description: Project creator information
+ *         members:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProjectMember'
+ *           description: Project members
+ *         mentors:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ProjectMentor'
+ *           description: Project mentors
+ *         boards:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Board'
+ *           description: Project boards
+ *         _count:
+ *           type: object
+ *           properties:
+ *             tasks:
+ *               type: number
+ *             members:
+ *               type: number
+ *             mentors:
+ *               type: number
+ *             boards:
+ *               type: number
+ *           description: Count of related entities
+ *     ProjectMember:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         role:
+ *           type: string
+ *           enum: [LEADER, MEMBER]
+ *         joinedAt:
+ *           type: string
+ *           format: date-time
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             name:
+ *               type: string
+ *             email:
+ *               type: string
+ *             avatarUrl:
+ *               type: string
+ *     ProjectMentor:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         role:
+ *           type: string
+ *         joinedAt:
+ *           type: string
+ *           format: date-time
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             name:
+ *               type: string
+ *             email:
+ *               type: string
+ *             avatarUrl:
+ *               type: string
+ *     Board:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         order:
+ *           type: number
+ *         projectId:
+ *           type: string
+ *           format: uuid
  *     ProjectResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/ServiceWrapperResponse'
@@ -182,6 +267,105 @@ router.post(
 
 /**
  * @openapi
+ * /projects/me:
+ *   get:
+ *     tags:
+ *       - Projects
+ *     summary: Get my projects
+ *     description: Retrieves all projects where the authenticated user is owner, member, or mentor
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of projects per page
+ *         example: 10
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for project name or description
+ *         example: "mobile"
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, completed, cancelled, on-hold]
+ *         description: Filter by project status
+ *         example: "active"
+ *       - in: query
+ *         name: deadline
+ *         schema:
+ *           type: string
+ *           enum: [upcoming, overdue, this-week, this-month]
+ *         description: Filter by deadline status
+ *         example: "upcoming"
+ *     responses:
+ *       200:
+ *         description: My projects retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProjectListResponse'
+ *             example:
+ *               message: "My projects retrieved successfully"
+ *               content:
+ *                 - id: "123e4567-e89b-12d3-a456-426614174000"
+ *                   name: "EduTasker Mobile App"
+ *                   description: "Mobile application for task management"
+ *                   status: "active"
+ *                   deadline: "2024-12-31T23:59:59Z"
+ *                   createdBy:
+ *                     id: "456e7890-e89b-12d3-a456-426614174001"
+ *                     name: "John Doe"
+ *                     email: "john@example.com"
+ *                   members:
+ *                     - id: "mem1"
+ *                       role: "LEADER"
+ *                       joinedAt: "2023-01-01T00:00:00Z"
+ *                       user:
+ *                         id: "456e7890-e89b-12d3-a456-426614174001"
+ *                         name: "John Doe"
+ *                         email: "john@example.com"
+ *                   createdAt: "2023-01-01T00:00:00Z"
+ *                   updatedAt: "2023-01-01T00:00:00Z"
+ *               pagination:
+ *                 page: 1
+ *                 size: 10
+ *                 totalPages: 1
+ *                 totalElements: 1
+ *               messages: ["My projects retrieved successfully"]
+ *               code: "200"
+ *               success: true
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/me",
+  authGuard,
+  validate({ query: projectListQuerySchema }),
+  ProjectController.getMyProjects,
+);
+
+/**
+ * @openapi
  * /projects:
  *   get:
  *     tags:
@@ -265,12 +449,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get(
-  "/",
-  authGuard,
-  validate({ query: projectListQuerySchema }),
-  ProjectController.listProjects,
-);
+router.get("/", validate({ query: projectListQuerySchema }), ProjectController.listProjects);
 
 /**
  * @openapi
