@@ -11,11 +11,11 @@ const loginHandler = async (req: Request, res: Response) => {
 };
 
 const logoutHandler = async (req: Request, res: Response) => {
-  return await AuthService.logout(req.body);
+  return await AuthService.logout(req.body.refreshToken);
 };
 
 const refreshTokenHandler = async (req: Request, res: Response) => {
-  return await AuthService.refreshToken(req.body);
+  return await AuthService.refreshToken(req.body.refreshToken);
 };
 
 export const register = serviceWrapper(registerHandler, "User registered successfully");
