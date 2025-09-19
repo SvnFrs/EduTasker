@@ -3,6 +3,7 @@ import express, { Router } from "express";
 import {
   authRoute,
   commentRoute,
+  importRoute,
   projectRoute,
   roleRoute,
   taskRoute,
@@ -22,6 +23,7 @@ projectRouter.use("/", commentRoute);
 
 app.use("/auth", authRoute);
 app.use("/users", userRoute);
+app.use("/import", importRoute);
 app.use("/projects", projectRouter);
 app.use("/roles", roleRoute);
 

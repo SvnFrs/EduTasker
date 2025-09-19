@@ -1,13 +1,13 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../config/database.js";
 import type {
-  UpdateProfileDTO,
   ChangePasswordDTO,
-  UserProfileResponse,
   UpdateAvatarDTO,
+  UpdateProfileDTO,
+  UpdateUserByIdDTO,
   UserListQuery,
   UserListResponse,
-  UpdateUserByIdDTO,
+  UserProfileResponse,
 } from "./user.type.js";
 
 const mapToUserProfileResponse = (user: {
