@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../../config/database.js";
-import { signToken, verifyToken } from "../../helper/jwt.js";
 import type { AuthenticationResponse, LoginDTO, RegisterDTO } from "./auth.type.ts";
+import tokenService, { TokenType } from "./token.service.js";
 
 export const register = async (dto: RegisterDTO) => {
   if (dto.password !== dto.rePassword) throw new Error("Passwords do not match");
@@ -22,7 +22,7 @@ export const register = async (dto: RegisterDTO) => {
       },
     },
   });
-  return { user, token: signToken({ id: user.id, email: user.email }) };
+  return { user };
 };
 
 export const login = async (dto: LoginDTO): Promise<AuthenticationResponse> => {
@@ -46,8 +46,14 @@ export const login = async (dto: LoginDTO): Promise<AuthenticationResponse> => {
   const valid = await bcrypt.compare(dto.password, user.passwordHash);
   if (!valid) throw new Error("Password is incorrect");
 
-  const accessToken = signToken({ id: user.id, email: user.email });
-  const refreshToken = signToken({ id: user.id, email: user.email });
+  const accessToken = await tokenService.generateToken(TokenType.ACCESS, {
+    id: user.id,
+    email: user.email,
+  });
+  const refreshToken = await tokenService.generateToken(TokenType.REFRESH, {
+    id: user.id,
+    email: user.email,
+  });
 
   const roles = user.roles.map((userRole) => userRole.role.code);
 
@@ -59,7 +65,7 @@ export const login = async (dto: LoginDTO): Promise<AuthenticationResponse> => {
 };
 
 export const refreshToken = async (token: string): Promise<AuthenticationResponse> => {
-  const decoded = verifyToken(token);
+  const decoded = await tokenService.verifyToken(TokenType.ACCESS, token);
   const user = await prisma.user.findUnique({
     where: { id: decoded.id },
     include: {
@@ -77,8 +83,14 @@ export const refreshToken = async (token: string): Promise<AuthenticationRespons
   });
   if (!user) throw new Error("User not found");
 
-  const accessToken = signToken({ id: user.id, email: user.email });
-  const newRefreshToken = signToken({ id: user.id, email: user.email });
+  const accessToken = await tokenService.generateToken(TokenType.ACCESS, {
+    id: user.id,
+    email: user.email,
+  });
+  const newRefreshToken = await tokenService.generateToken(TokenType.REFRESH, {
+    id: user.id,
+    email: user.email,
+  });
   const roles = user.roles.map((userRole) => userRole.role.name);
 
   return {
@@ -89,7 +101,7 @@ export const refreshToken = async (token: string): Promise<AuthenticationRespons
 };
 
 export const logout = async (token: string) => {
-  const decoded = verifyToken(token);
+  const decoded = await tokenService.verifyToken(TokenType.ACCESS, token);
   const user = await prisma.user.findUnique({ where: { id: decoded.id } });
   if (!user) throw new Error("User not found");
 };

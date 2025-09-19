@@ -1,14 +1,13 @@
 import { Router } from "express";
-import { authGuard } from "../../middleware/auth.middleware.js";
-import { validate } from "../../middleware/validate.middleware.js";
+import { authGuard, validate } from "../../middleware/index.js";
 import * as TaskController from "./task.controller.js";
 import {
-  createTaskSchema,
-  updateTaskSchema,
-  taskListQuerySchema,
-  projectTaskParamSchema,
-  projectIdParamSchema,
   assignTaskSchema,
+  createTaskSchema,
+  projectIdParamSchema,
+  projectTaskParamSchema,
+  taskListQuerySchema,
+  updateTaskSchema,
   updateTaskStatusSchema,
 } from "./task.schema.js";
 
