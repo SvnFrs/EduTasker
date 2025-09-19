@@ -624,6 +624,136 @@ export const deleteBoard = async (boardId: string): Promise<void> => {
   });
 };
 
+export const getMyProjects = async (
+  userId: string,
+  query?: Partial<ProjectListQuery>,
+): Promise<ProjectListResponse> => {
+  const page = query?.page || 1;
+  const limit = query?.limit || 10;
+  const skip = (page - 1) * limit;
+
+  let where: any = {
+    OR: [
+      { createdById: userId },
+      {
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      {
+        ProjectMentor: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+    ],
+  };
+
+  if (query?.search) {
+    where.AND = where.AND || [];
+    where.AND.push({
+      OR: [
+        { name: { contains: query.search, mode: "insensitive" } },
+        { description: { contains: query.search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (query?.status) {
+    where.AND = where.AND || [];
+    where.AND.push({ status: query.status });
+  }
+
+  if (query?.deadline) {
+    const now = new Date();
+    let deadlineCondition: any = {};
+
+    switch (query.deadline) {
+      case "upcoming":
+        deadlineCondition = { gte: now };
+        break;
+      case "overdue":
+        deadlineCondition = { lt: now };
+        break;
+      case "this-week":
+        const weekEnd = new Date(now);
+        weekEnd.setDate(now.getDate() + 7);
+        deadlineCondition = { gte: now, lte: weekEnd };
+        break;
+      case "this-month":
+        const monthEnd = new Date(now);
+        monthEnd.setMonth(now.getMonth() + 1);
+        deadlineCondition = { gte: now, lte: monthEnd };
+        break;
+    }
+
+    where.AND = where.AND || [];
+    where.AND.push({ deadline: deadlineCondition });
+  }
+
+  const [projects, total] = await Promise.all([
+    prisma.project.findMany({
+      where,
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        Board: true,
+        ProjectMentor: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            tasks: true,
+            members: true,
+            Board: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.project.count({ where }),
+  ]);
+
+  return {
+    projects: projects.map(mapToProjectResponse),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+};
+
 export const getProjectBoards = async (projectId: string): Promise<BoardResponse[]> => {
   const project = await prisma.project.findUnique({
     where: { id: projectId },

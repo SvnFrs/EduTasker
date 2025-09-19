@@ -74,6 +74,18 @@ const removeMemberHandler = async (req: Request, res: Response) => {
   return { message: "Member removed successfully" };
 };
 
+const getMyProjectsHandler = async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const query: Partial<ProjectListQuery> = {
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+    search: req.query.search as string,
+    status: req.query.status as string,
+    deadline: req.query.deadline as "upcoming" | "overdue" | "this-week" | "this-month",
+  };
+  return await ProjectService.getMyProjects(userId, query);
+};
+
 export const createProject = serviceWrapper(createProjectHandler, "Project created successfully");
 export const listProjects = serviceWrapper(listProjectsHandler, "Projects retrieved successfully");
 export const getProjectById = serviceWrapper(
@@ -84,3 +96,7 @@ export const updateProject = serviceWrapper(updateProjectHandler, "Project updat
 export const deleteProject = serviceWrapper(deleteProjectHandler, "Project deleted successfully");
 export const addMember = serviceWrapper(addMemberHandler, "Member added successfully");
 export const removeMember = serviceWrapper(removeMemberHandler, "Member removed successfully");
+export const getMyProjects = serviceWrapper(
+  getMyProjectsHandler,
+  "My projects retrieved successfully",
+);
