@@ -88,7 +88,7 @@ const unverifyMentorHandler = async (req: Request, res: Response) => {
 };
 
 const getVerifiedMentorsHandler = async (req: Request, res: Response) => {
-  const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+  const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10)) : 10;
   return await MentorService.getVerifiedMentors(limit);
 };
 

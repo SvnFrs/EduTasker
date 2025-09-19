@@ -127,16 +127,20 @@ export const getMentorWithProjects = async (id: string): Promise<MentorWithProje
           name: true,
           email: true,
           avatarUrl: true,
-        },
-      },
-      projects: {
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          status: true,
-          deadline: true,
-          createdAt: true,
+          ProjectMentor: {
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  status: true,
+                  deadline: true,
+                  createdAt: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -148,17 +152,17 @@ export const getMentorWithProjects = async (id: string): Promise<MentorWithProje
 
   return {
     ...mapToMentorResponse(mentor),
-    projects: mentor.projects.map((project) => ({
-      ...project,
-      description: project.description ?? undefined,
-      deadline: project.deadline ?? undefined,
+    projects: mentor.user.ProjectMentor.map((projectMentor) => ({
+      ...projectMentor.project,
+      description: projectMentor.project.description ?? undefined,
+      deadline: projectMentor.project.deadline ?? undefined,
     })),
   };
 };
 
 export const getAllMentors = async (query: MentorListQuery): Promise<MentorListResponse> => {
-  const page = parseInt(query.page || "1");
-  const limit = parseInt(query.limit || "10");
+  const page = Math.max(1, parseInt(query.page || "1") || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit || "10") || 10));
   const skip = (page - 1) * limit;
 
   const where: any = {};
