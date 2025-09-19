@@ -4,6 +4,7 @@ import {
   authRoute,
   boardRoute,
   commentRoute,
+  fileRoute,
   importRoute,
   mentorRoute,
   projectRoute,
@@ -33,4 +34,5 @@ app.use("/comments", commentRoute);
 app.use("/tasks", taskRoute);
 app.use("/mentors", mentorRoute);
 app.use("/boards", boardRoute);
+app.use("/file", fileRoute);
 export default app;
