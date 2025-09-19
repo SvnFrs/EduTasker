@@ -111,7 +111,7 @@ export const getAllProjects = async (query: ProjectListQuery): Promise<ProjectLi
   const skip = (page - 1) * limit;
 
   let where: any = {};
-
+  console.log(query);
   if (query.search) {
     where.OR = [
       { name: { contains: query.search, mode: "insensitive" } },

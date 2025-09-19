@@ -4,11 +4,13 @@ import {
   authRoute,
   commentRoute,
   importRoute,
+  mentorRoute,
   projectRoute,
   roleRoute,
   taskRoute,
   userRoute,
 } from "./module/index.js";
+
 const app = express();
 app.use(express.json());
 
@@ -26,5 +28,7 @@ app.use("/users", userRoute);
 app.use("/import", importRoute);
 app.use("/projects", projectRouter);
 app.use("/roles", roleRoute);
-
+app.use("/comments", commentRoute);
+app.use("/tasks", taskRoute);
+app.use("/mentors", mentorRoute);
 export default app;

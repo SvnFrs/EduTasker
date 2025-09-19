@@ -5,4 +5,14 @@ import taskRoute from "./task/task.routes.js";
 import commentRoute from "./comment/comment.routes.js";
 import roleRoute from "./role/role.routes.js";
 import importRoute from "./import/import.routes.js";
-export { authRoute, userRoute, projectRoute, taskRoute, commentRoute, roleRoute, importRoute };
+import mentorRoute from "./mentor/mentor.routes.js";
+export {
+  authRoute,
+  userRoute,
+  projectRoute,
+  taskRoute,
+  commentRoute,
+  roleRoute,
+  importRoute,
+  mentorRoute,
+};

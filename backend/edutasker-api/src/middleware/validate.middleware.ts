@@ -14,19 +14,19 @@ export function validate<
     if (schemas.params) {
       const { value, error } = schemas.params.validate(req.params);
       if (error) return res.status(400).json({ error: error.message });
-      req.params = value as TParams;
+      Object.assign(req.params, value);
     }
 
     if (schemas.query) {
       const { value, error } = schemas.query.validate(req.query);
       if (error) return res.status(400).json({ error: error.message });
-      req.query = value as TQuery;
+      Object.assign(req.query, value);
     }
 
     if (schemas.body) {
       const { value, error } = schemas.body.validate(req.body);
       if (error) return res.status(400).json({ error: error.message });
-      req.body = value as TBody;
+      Object.assign(req.body, value);
     }
     next();
   };
