@@ -5,12 +5,6 @@ export interface StudentImportRow {
   defaultPassword?: string;
 }
 
-export interface StudentImportDTO {
-  students: StudentImportRow[];
-  generateDefaultPassword?: boolean;
-  sendWelcomeEmail?: boolean;
-}
-
 export interface StudentTemplateQuery {
   format?: "xlsx";
   includeExample?: boolean;
@@ -59,4 +53,30 @@ export interface BulkImportOptions {
   overwriteExisting?: boolean;
   validateOnly?: boolean;
   batchSize?: number;
+}
+
+export interface ExcelParseResult {
+  headers: string[];
+  dataRows: any[][];
+  totalRows: number;
+  isValid: boolean;
+  error: string | null;
+}
+
+export interface ColumnMapping {
+  name: number;
+  email: number;
+  studentId: number;
+  password: number;
+}
+
+export interface ImportValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  invalidRows: Array<{ row: number; errors: string[] }>;
+  duplicateEmails: string[];
+  existingEmails: string[];
+  totalRecords: number;
+  validRecords: number;
 }
