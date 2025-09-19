@@ -6,6 +6,7 @@ import commentRoute from "./comment/comment.routes.js";
 import roleRoute from "./role/role.routes.js";
 import importRoute from "./import/import.routes.js";
 import mentorRoute from "./mentor/mentor.routes.js";
+import boardRoute from "./board/board.routes.js";
 export {
   authRoute,
   userRoute,
@@ -15,4 +16,5 @@ export {
   roleRoute,
   importRoute,
   mentorRoute,
+  boardRoute,
 };

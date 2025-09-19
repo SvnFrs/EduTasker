@@ -5,7 +5,9 @@ interface EnvSchema {
   PORT: number;
   DATABASE_URL: string;
   JWT_SECRET: string;
+  JWT_REFRESH_SECRET: string;
   JWT_EXPIRES_IN: number;
+  JWT_REFRESH_EXPIRES_IN: number;
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
@@ -16,6 +18,8 @@ const validators = {
   DATABASE_URL: Joi.string().uri().required(),
   JWT_SECRET: Joi.string().required(),
   JWT_EXPIRES_IN: Joi.number().default(1000),
+  JWT_REFRESH_SECRET: Joi.string().required(),
+  JWT_REFRESH_EXPIRES_IN: Joi.number().default(10000),
   REDIS_HOST: Joi.string().default("localhost"),
   REDIS_PORT: Joi.number().default(6379),
   REDIS_PASSWORD: Joi.string().default(""),

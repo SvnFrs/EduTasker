@@ -1,4 +1,9 @@
 import { prisma } from "../../config/database.js";
+import {
+  adjustOrderForNewItem,
+  getNextOrderNumber,
+  reorderSingleItem,
+} from "../../helper/reorder.util.js";
 import type {
   AssignTaskDTO,
   CreateTaskDTO,
@@ -81,11 +86,9 @@ export const createTask = async (
 
   let taskOrder = data.order;
   if (taskOrder === undefined) {
-    const lastTask = await prisma.task.findFirst({
-      where: { boardId: data.boardId },
-      orderBy: { order: "desc" },
-    });
-    taskOrder = (lastTask?.order || 0) + 1;
+    taskOrder = await getNextOrderNumber(projectId, "task", { boardId: data.boardId });
+  } else {
+    await adjustOrderForNewItem(taskOrder, projectId, "task", { boardId: data.boardId });
   }
 
   if (data.assigneeIds && data.assigneeIds.length > 0) {
@@ -446,33 +449,7 @@ export const updateTask = async (
   data: UpdateTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -532,33 +509,7 @@ export const deleteTask = async (
   taskId: string,
   userId: string,
 ): Promise<void> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   await prisma.task.delete({
     where: { id: taskId },
@@ -571,33 +522,7 @@ export const assignUsersToTask = async (
   data: AssignTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const projectMembers = await prisma.projectMember.findMany({
     where: {
@@ -630,33 +555,7 @@ export const updateTaskStatus = async (
   data: UpdateTaskStatusDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -711,33 +610,7 @@ export const moveTask = async (
   data: MoveTaskDTO,
   userId: string,
 ): Promise<TaskResponse> => {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-    include: {
-      members: {
-        where: { userId },
-      },
-    },
-  });
-
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  if (project.members.length === 0) {
-    throw new Error("You are not a member of this project");
-  }
-
-  const task = await prisma.task.findUnique({
-    where: {
-      id: taskId,
-      projectId,
-    },
-  });
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  await validateProjectAndTaskOwnedByUserId(projectId, taskId, userId);
 
   const board = await prisma.board.findUnique({
     where: { id: data.boardId },
@@ -745,6 +618,21 @@ export const moveTask = async (
 
   if (!board || board.projectId !== projectId) {
     throw new Error("Board not found or doesn't belong to this project");
+  }
+
+  const currentTask = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { boardId: true, order: true },
+  });
+
+  if (currentTask && (currentTask.boardId !== data.boardId || currentTask.order !== data.order)) {
+    await reorderSingleItem({
+      itemId: taskId,
+      newOrder: data.order,
+      projectId,
+      tableName: "task",
+      additionalWhereClause: { boardId: data.boardId },
+    });
   }
 
   const updatedTask = await prisma.task.update({
@@ -795,4 +683,38 @@ export const moveTask = async (
   });
 
   return mapToTaskResponse(updatedTask);
+};
+
+const validateProjectAndTaskOwnedByUserId = async (
+  projectId: string,
+  taskId: string,
+  userId: string,
+): Promise<void> => {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      members: {
+        where: { userId },
+      },
+    },
+  });
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (project.members.length === 0) {
+    throw new Error("You are not a member of this project");
+  }
+
+  const task = await prisma.task.findUnique({
+    where: {
+      id: taskId,
+      projectId,
+    },
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
 };

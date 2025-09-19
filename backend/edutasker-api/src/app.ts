@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import express, { Router } from "express";
 import {
   authRoute,
+  boardRoute,
   commentRoute,
   importRoute,
   mentorRoute,
@@ -31,4 +32,5 @@ app.use("/roles", roleRoute);
 app.use("/comments", commentRoute);
 app.use("/tasks", taskRoute);
 app.use("/mentors", mentorRoute);
+app.use("/boards", boardRoute);
 export default app;

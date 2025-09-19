@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { authGuard } from "../../middleware/auth.middleware.js";
-import { validate } from "../../middleware/validate.middleware.js";
+import { authGuard, validate } from "../../middleware/index.js";
 import * as TaskController from "./task.controller.js";
 import {
-  createTaskSchema,
-  updateTaskSchema,
-  taskListQuerySchema,
-  projectTaskParamSchema,
-  projectIdParamSchema,
   assignTaskSchema,
+  createTaskSchema,
+  moveTaskSchema,
+  projectIdParamSchema,
+  projectTaskParamSchema,
+  taskListQuerySchema,
+  updateTaskSchema,
   updateTaskStatusSchema,
 } from "./task.schema.js";
 
@@ -864,6 +864,144 @@ router.put(
   authGuard,
   validate({ params: projectTaskParamSchema, body: updateTaskStatusSchema }),
   TaskController.updateTaskStatus,
+);
+
+/**
+ * @openapi
+ * /projects/{projectId}/tasks/{taskId}/move:
+ *   put:
+ *     tags:
+ *       - Tasks
+ *     summary: Move task to different board or reorder within board
+ *     description: Moves a task to a different board and/or changes its position order within the board. Handles both cross-board moves and same-board reordering with proper order management.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Project ID
+ *         example: "123e4567-e89b-12d3-a456-426614174000"
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Task ID to move
+ *         example: "789e0123-e89b-12d3-a456-426614174002"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - boardId
+ *               - order
+ *             properties:
+ *               boardId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Target board ID where the task should be moved
+ *                 example: "abc12345-e89b-12d3-a456-426614174004"
+ *               order:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: Position order within the target board (0-based index)
+ *                 example: 2
+ *           example:
+ *             boardId: "abc12345-e89b-12d3-a456-426614174004"
+ *             order: 2
+ *     responses:
+ *       200:
+ *         description: Task moved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TaskResponse'
+ *             example:
+ *               message: "Task moved successfully"
+ *               content:
+ *                 id: "789e0123-e89b-12d3-a456-426614174002"
+ *                 title: "Implement user authentication"
+ *                 description: "Implement JWT-based authentication system"
+ *                 priority: "high"
+ *                 status: "in-progress"
+ *                 projectId: "123e4567-e89b-12d3-a456-426614174000"
+ *                 board:
+ *                   id: "abc12345-e89b-12d3-a456-426614174004"
+ *                   name: "In Progress"
+ *                   order: 1
+ *                 order: 2
+ *                 assignees:
+ *                   - id: "456e7890-e89b-12d3-a456-426614174001"
+ *                     assignedAt: "2023-01-02T00:00:00Z"
+ *                     user:
+ *                       id: "456e7890-e89b-12d3-a456-426614174001"
+ *                       name: "John Doe"
+ *                       email: "john@example.com"
+ *                       avatarUrl: "https://example.com/avatar.jpg"
+ *                 dueDate: "2024-03-15T23:59:59Z"
+ *                 createdBy:
+ *                   id: "456e7890-e89b-12d3-a456-426614174001"
+ *                   name: "John Doe"
+ *                   email: "john@example.com"
+ *                 createdAt: "2023-01-01T00:00:00Z"
+ *                 updatedAt: "2023-01-02T00:00:00Z"
+ *                 _count:
+ *                   comments: 3
+ *               messages: ["Task moved successfully"]
+ *               code: "200"
+ *               success: true
+ *       400:
+ *         description: Bad request - Required parameters missing, invalid board ID, or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               message: "Board not found or doesn't belong to this project"
+ *               messages: ["Board not found or doesn't belong to this project"]
+ *               code: "400"
+ *               success: false
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - No permission to move tasks in this project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               message: "You are not a member of this project"
+ *               messages: ["You are not a member of this project"]
+ *               code: "403"
+ *               success: false
+ *       404:
+ *         description: Task, project, or target board not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               message: "Task not found"
+ *               messages: ["Task not found"]
+ *               code: "404"
+ *               success: false
+ */
+router.put(
+  "/:projectId/tasks/:taskId/move",
+  authGuard,
+  validate({ params: projectTaskParamSchema, body: moveTaskSchema }),
+  TaskController.moveTask,
 );
 
 export default router;
