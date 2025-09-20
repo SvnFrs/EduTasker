@@ -7,6 +7,7 @@ import roleRoute from "./role/role.routes.js";
 import importRoute from "./import/import.routes.js";
 import mentorRoute from "./mentor/mentor.routes.js";
 import boardRoute from "./board/board.routes.js";
+import fileRoute from "./file/file.routes.js";
 export {
   authRoute,
   userRoute,
@@ -17,4 +18,5 @@ export {
   importRoute,
   mentorRoute,
   boardRoute,
+  fileRoute,
 };
