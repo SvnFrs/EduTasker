@@ -12,6 +12,7 @@ import {
   taskRoute,
   userRoute,
 } from "./module/index.js";
+import { rateLimiter } from "./middleware/rate-limiter.middleware.js";
 
 const app = express();
 app.use(express.json());
@@ -24,7 +25,7 @@ const projectRouter = Router();
 projectRouter.use("/", projectRoute);
 projectRouter.use("/", taskRoute);
 projectRouter.use("/", commentRoute);
-
+app.use(rateLimiter);
 app.use("/auth", authRoute);
 app.use("/users", userRoute);
 app.use("/import", importRoute);
