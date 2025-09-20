@@ -12,7 +12,7 @@ import {
   taskRoute,
   userRoute,
 } from "./module/index.js";
-import { rateLimiter } from "./middleware/rate-limmitter.middleware.js";
+import { rateLimiter } from "./middleware/rate-limiter.middleware.js";
 
 const app = express();
 app.use(express.json());
