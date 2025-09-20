@@ -15,7 +15,6 @@ export interface IPaginationWrapper<T extends any[]> {
 }
 
 export interface IResponseObject<T> {
-  message: string;
   content: T;
   messages: string[];
   code: string;
@@ -33,7 +32,6 @@ export const createResponseObject = <T>(params: {
   const { content, messages, code, success, pagination } = params;
   const messageArray = typeof messages === "string" ? [messages] : (messages ?? []);
   return {
-    message: messageArray[0] ?? "",
     content,
     messages: messageArray,
     code,
@@ -56,7 +54,6 @@ export const unwrapPaginationWrapper = <T extends any[]>(
     typeof options?.messages === "string" ? [options.messages] : (options?.messages ?? []);
 
   return {
-    message: messageArray[0] ?? "",
     content: wrapper.data,
     messages: messageArray,
     code: options?.code ?? "200",

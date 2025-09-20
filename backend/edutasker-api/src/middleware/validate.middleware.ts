@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import Joi from "joi";
+import { createResponseObject } from "../helper/response-object.js";
 
 export function validate<
   TParams extends Record<string, string> = {},
@@ -13,19 +14,43 @@ export function validate<
   return (req, res, next) => {
     if (schemas.params) {
       const { value, error } = schemas.params.validate(req.params);
-      if (error) return res.status(400).json({ error: error.message });
+      if (error)
+        return res.status(200).json(
+          createResponseObject<void>({
+            messages: [error.message],
+            code: "VALIDATION_ERROR",
+            success: false,
+            content: undefined,
+          }),
+        );
       Object.assign(req.params, value);
     }
 
     if (schemas.query) {
       const { value, error } = schemas.query.validate(req.query);
-      if (error) return res.status(400).json({ error: error.message });
+      if (error)
+        return res.status(200).json(
+          createResponseObject<void>({
+            messages: [error.message],
+            code: "VALIDATION_ERROR",
+            success: false,
+            content: undefined,
+          }),
+        );
       Object.assign(req.query, value);
     }
 
     if (schemas.body) {
       const { value, error } = schemas.body.validate(req.body);
-      if (error) return res.status(400).json({ error: error.message });
+      if (error)
+        return res.status(200).json(
+          createResponseObject<void>({
+            messages: [error.message],
+            code: "VALIDATION_ERROR",
+            success: false,
+            content: undefined,
+          }),
+        );
       Object.assign(req.body, value);
     }
     next();
