@@ -16,6 +16,8 @@ interface EnvSchema {
   S3_SECRET_ACCESS_KEY: string;
   S3_REGION: string;
   S3_ENDPOINT: string;
+  RATE_LIMIT: number;
+  RATE_LIMIT_WINDOW: number;
 }
 
 const validators = {
@@ -33,6 +35,8 @@ const validators = {
   S3_SECRET_ACCESS_KEY: Joi.string().required(),
   S3_REGION: Joi.string().required(),
   S3_ENDPOINT: Joi.string().required(),
+  RATE_LIMIT: Joi.number().default(100), // 100 requests per window
+  RATE_LIMIT_WINDOW: Joi.number().default(1000), // 1 second
 };
 const configLoader = new ConfigLoader<EnvSchema>(validators, (env) => ({
   ...env,
